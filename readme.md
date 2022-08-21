@@ -108,3 +108,25 @@ dependencies {
 | DBUnit  | DB   |
 | CppUnit | C++  |
 | NUnit   | .net |
+
+-----
+
+#### 2.2 Hello Controller 테스트 코드 작성하기
+
+- Application (메인)클래스 추가
+```java
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
+
+@SpringBootApplication
+public class Application {
+    public static void main(String[] args) {
+        SpringApplication.run(Application.class, args);
+    }
+}
+```
+
+| 키워드     | 내용                                                                                                   |
+|:--------|:-----------------------------------------------------------------------------------------------------|
+| @SpringBootApplication   | - 스프링 부트 자동 설정, 스프링 Bean 읽기와 생성을 모두 자동으로 설정함<br/> - 해당 어노테이션이 선언된 위치부터 설정을 읽어가기 때문에 프로젝트 최상단에서 선언할 것 |
+|     SpringApplication.run | 내장 WAS 실행  (서버에 별도의 톰켓 설치 작업을 안해도 됨, 서버 실행 시 JAR Runnable File 만 클릭하면 실행할 수 있음)                      |
