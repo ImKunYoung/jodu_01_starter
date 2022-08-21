@@ -64,7 +64,7 @@ apply plugin: 'io.spring.dependency-management'
 
 
 - 각종 의존성 (라이브러리) 들 추가를 위한 리포지터리 (원격저장소) 추가
-- 
+
 ```
 repositories {
     mavenCentral()
