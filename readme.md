@@ -130,3 +130,33 @@ public class Application {
 |:--------|:-----------------------------------------------------------------------------------------------------|
 | @SpringBootApplication   | - 스프링 부트 자동 설정, 스프링 Bean 읽기와 생성을 모두 자동으로 설정함<br/> - 해당 어노테이션이 선언된 위치부터 설정을 읽어가기 때문에 프로젝트 최상단에서 선언할 것 |
 |     SpringApplication.run | 내장 WAS 실행  (서버에 별도의 톰켓 설치 작업을 안해도 됨, 서버 실행 시 JAR Runnable File 만 클릭하면 실행할 수 있음)                      |
+
+<br/>
+
+- 간단한 컨트롤러 구현
+
+```java
+package org.example.jodu_01_Starter.controller;
+
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+@RestController
+public class HelloController {
+
+    @GetMapping("/hello")
+    public String hello() {
+        return "hello";
+    }
+
+}
+```
+
+> /hello 로 요청이 오면 문자열 hello 를 반환함
+
+| 키워드             | 내용                                                                                                                                               |
+|:----------------|:-------------------------------------------------------------------------------------------------------------------------------------------------|
+| @RestController | - 컨트롤러를 JSON 을 반환하는 컨트롤러로 만들어줌 <br/> - 예전에 @ResponseBody 를 각 메소드마다 선언했던 것을 한번에 사용할 수 있게 해줌                                                       |
+| @GetMapping     | - HTTP Method 인 Get 의 요청을 받을 수 있는 API 를 만들어줌 <br/> - 예전에 @RequestMapping(method = RequestMethod.GET) 으로 사용되던 거                                   |
+
+
