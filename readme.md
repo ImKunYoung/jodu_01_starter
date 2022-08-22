@@ -205,6 +205,7 @@ public class HelloControllerTest {
 | .andExpect(MockMvcResultMatchers.content().string(hello))  | - mvc.perform 의 결과를 검증 <br/> - 응답 본문의 내용을 검증 <br/> - Controller 에서 "hello" 를 리턴하는 지 검증                                                                    |
 
 <br/>
+---
 
 #### 2.3 롬복 소개
 
@@ -215,6 +216,8 @@ public class HelloControllerTest {
 프로젝트마다 build.gradle 라이브러리 추가, Enable annotation processing 체크하기
 
 <br/>
+
+---
 
 #### 2.4 Hello Controller 코드를 롬복으로 전환하기
 
@@ -289,8 +292,19 @@ public class HelloResponseDtoTest {
 - 실행결과
 ![](readmeImage/img.png)
 
+<br/>
 
+- HelloController 에서 ResponseDTO 사용
 
+```java
+    @GetMapping("/hello/dto")
+    public HelloResponseDto HelloDto(@RequestParam("name") String name, @RequestParam("amount") int amount) {
+        return new HelloResponseDto(name, amount);
+    }
+```
+|keyword| description                                                                                                                            |
+|:---|:---------------------------------------------------------------------------------------------------------------------------------------|
+|@ReqeustParam| - 외부에서 API 로 넘긴 파라미터를 가져오는 어노테이션임 <br/> - 여기서는 외부에서 name (@RequestParam("name")) 이란 이름으로 넘긴 파라미터를 메소드 파라미터 name(String name) 에 저장하게 됨. |
 
 
 
