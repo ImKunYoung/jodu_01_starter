@@ -242,10 +242,52 @@ public class HelloResponseDto {
 |@Getter| - 선언된 모든 필드의 get 메소드를 생성해줌                                           |
 |@RequiredArgsConstructor| - 선언된 모든 final 필드가 포함된 생성자를 생성해줌 <br/> - final 이 없는 필드는 생성자에 포함되지 않음 |
 
+<br/>
+
+- HelloResponseDto 테스트 코드 작성
+
+```java
+package org.example.jodu_01_Starter.dto;
+
+import org.junit.Test;
+
+import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+
+public class HelloResponseDtoTest {
+
+    @Test
+    public void lombokFunctionTest() {
+
+        /*given*/
+        String name = "test";
+
+        int amount = 1000;
 
 
+        /*when*/
+        HelloResponseDto dto = new HelloResponseDto(name, amount);
 
 
+        /*then*/
+        assertThat(dto.getName()).isEqualTo(name);
+        assertThat(dto.getAmount()).isEqualTo(amount);
+
+    }
+}
+```
+|keyword| description                                                                                                                 |
+|:---|:----------------------------------------------------------------------------------------------------------------------------|
+|assertThat| - assertj 라는 테스트 검증 라이이브러리의 검증 메소드임. <br/> - 검증하고 싶은 대상을 매서드 인자로 받음 <br/> - 메소드 체이닝이 지원되어 isEqualTo 와 같이 메소드를 이어서 사용할 수 있다. |
+|isEqualTo| - assertj 의 동등 비교 메소드임. <br/> - assertThat 에 있는 값과 isEqaulTo 의 값을 비교해서 같을 때만 성공!                                            |
+
+> JUnit 과 비교했을 때 assertj 의 장점
+> - CoreMatchers 와 달리 추가적으로 라이브러리가 필요하지 않다.
+>   - Junit 의 assertThat 을 쓰게 되면 is() 와 같이 CoreMatchers 라이브러리가 필요하다.
+> - 자동완성이 좀 더 확실하게 지원된다.
+>   - IDE 에서는 CoreMatchers 와 같은 Mather 라이브러리의 자동완성 지원이 약하다.
+
+- 실행결과
+![](readmeImage/img.png)
 
 
 
