@@ -216,6 +216,34 @@ public class HelloControllerTest {
 
 <br/>
 
+#### 2.4 Hello Controller 코드를 롬복으로 전환하기
+
+- HelloResponseDto 추가
+
+```java
+package org.example.jodu_01_Starter.dto;
+
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
+
+@Getter
+@RequiredArgsConstructor
+public class HelloResponseDto {
+
+    private final String name;
+
+    private final int amount;
+    
+}
+```
+
+|keyword| description                                                          |
+|:---|:---------------------------------------------------------------------|
+|@Getter| - 선언된 모든 필드의 get 메소드를 생성해줌                                           |
+|@RequiredArgsConstructor| - 선언된 모든 final 필드가 포함된 생성자를 생성해줌 <br/> - final 이 없는 필드는 생성자에 포함되지 않음 |
+
+
+
 
 
 
