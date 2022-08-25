@@ -407,10 +407,20 @@ public class HelloControllerTest {
 ![](readmeImage/img_3.png)
 
 
+------
 
+#### 3.2 프로젝트에 Spring Data Jpa 적용하기
 
+- spring-boot-starter-data-jpa, com.h2database:h2 의존성 등록
+```
+implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+implementation 'com.h2database:h2'
+```
 
-
+|키워드| 내용                                                                                                                     |
+|:---|:-----------------------------------------------------------------------------------------------------------------------|
+|spring-boot-starter-data-jpa| - 스프링 부트용 Spring Data Jpa 추상화 라이브러리 <br/> - 스프링 부트 버전에 맞춰 자동으로 JPA 관련 라이브러리들의 버전을 관리해줌                                 |
+|h2| - 인메모리 RDB <br/> - 별도의 설치가 필요 없이 프로젝트 의존성만으로 관리 가능 <br/> - 메모리에서 실행되기 때문에 애플리케이션 재시작할 때마다 초기화된다는 점을 이용하여 테스트 용도로 주로 사용 |
 
 
 
