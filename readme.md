@@ -671,6 +671,106 @@ public Order cancelOrder(int orderId) {
 
 > order, billing, delivery 가 각자 본인의 취소 이벤트 처리를 하며, 서비스 메소드는 트랜잭션과 도메인 간의 순서만 보장해 준다.
 
+<br/>
+
+###### 등록, 수정, 삭제 기능 만들기
+
+- PostApiController
+
+```java
+import lombok.RequiredArgsConstructor;
+import org.example.jodu_01_Starter.service.posts.PostsService;
+import org.example.jodu_01_Starter.web.dto.PostSaveRequestDto;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RestController;
+
+@RequiredArgsConstructor
+@RestController
+public class PostApiController {
+
+    private final PostsService postsService;
+
+    @PostMapping("/api/v1/posts")
+    public Long save(@RequestBody PostSaveRequestDto requestDto) {
+
+        return postsService.save(requestDto);
+
+    }
+
+}
+```
+
+- PostsService
+```java
+import lombok.RequiredArgsConstructor;
+import org.example.jodu_01_Starter.domain.posts.PostsRepository;
+import org.example.jodu_01_Starter.web.dto.PostSaveRequestDto;
+import org.springframework.stereotype.Service;
+
+import javax.transaction.Transactional;
+
+@RequiredArgsConstructor
+@Service
+public class PostsService {
+
+    private final PostsRepository postsRepository;
+
+    @Transactional
+    public Long save(PostSaveRequestDto requestDto) {
+
+        return postsRepository.save(requestDto.toEntity()).getId();
+
+    }
+
+}
+```
+
+> @RequiredArgsConstructor: final 이 선언된 모든 필드를 인자값으로 하는 생성자를 생성해줌 (bean 으로 등록)
+
+- PostsSaveRequestDto
+
+```java
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import org.example.jodu_01_Starter.domain.posts.Posts;
+
+@Getter
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
+public class PostSaveRequestDto {
+
+    private String title;
+
+    private String content;
+
+    private String author;
+
+
+    public Posts toEntity() {
+        return Posts.builder()
+                .title(title)
+                .content(content)
+                .author(author)
+                .build();
+    }
+}
+```
+
+
+
+
+
+
+
+
+
+
+
+
 
 |키워드|내용|
 |:---|:---|
