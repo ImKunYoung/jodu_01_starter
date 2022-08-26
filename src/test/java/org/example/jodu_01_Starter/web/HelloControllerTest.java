@@ -1,5 +1,6 @@
-package org.example.jodu_01_Starter.controller;
+package org.example.jodu_01_Starter.web;
 
+import org.example.jodu_01_Starter.web.HelloController;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;

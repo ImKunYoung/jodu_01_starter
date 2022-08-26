@@ -1,4 +1,4 @@
-package org.example.jodu_01_Starter.dto;
+package org.example.jodu_01_Starter.web.dto;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;

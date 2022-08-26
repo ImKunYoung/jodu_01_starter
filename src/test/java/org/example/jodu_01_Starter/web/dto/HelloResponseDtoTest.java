@@ -1,5 +1,6 @@
-package org.example.jodu_01_Starter.dto;
+package org.example.jodu_01_Starter.web.dto;
 
+import org.example.jodu_01_Starter.web.dto.HelloResponseDto;
 import org.junit.Test;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;

@@ -1,6 +1,6 @@
-package org.example.jodu_01_Starter.controller;
+package org.example.jodu_01_Starter.web;
 
-import org.example.jodu_01_Starter.dto.HelloResponseDto;
+import org.example.jodu_01_Starter.web.dto.HelloResponseDto;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
