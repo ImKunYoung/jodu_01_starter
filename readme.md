@@ -574,13 +574,102 @@ public class PostRepositoryTest {
 
 > - 출력되는 쿼리 로그를 MySQL 버전으로 변경 : ```spring.jpa.properties.hibernate.dialect=org.hibernate.dialect.MySQL5InnoDBDialect```
 
+---
 
+#### 3.4 등록/수정/조회 API 만들기
 
+- API 만들기 위해 총 3개의 클래스 필요
+> - Request 데이터를 받을 DTO
+> - API 요청을 받을 Controller
+> - 트랜잭션, 도메인 기능 간의 순서를 보장하는 Service
 
+![](readmeImage/img_4.png)
 
+> - Web Layer
+>     - 흔히 사용하는 컨트롤러 (@Controller)와 JPS/Freemaker 등의 뷰 템플릿 영역임.
+>     - 이외에도 필터 (@Filter), 인터셉터, 컨트롤러 어드바이스 (@Controller/Advice) 등 외부 요청과 응답에 대한 전반적인 영역을 이야기함
+> - Service Layer
+>   - @Service 에 사용되는 서비스 영역이다.
+>   - 일반적으로 Controller 와 DAO 의 중간 영역에서 사용됨.
+>   - @Transactional 이 사용되어야 하는 영역이기도 함
+> - Repository Layer
+>   - Database 와 같이 데이터 저장소에 접근하는 영역임
+>   - 기존에 DAO (Data Access Object) 영역으로 이해하면 됨
+> - Dtos
+>   - Dto (Data Transfer Object)는 계층 간에 데이터 교환을 위한 객체를 이야기하며 Dtos 는 이들의 영역을 애기함
+>   - 예를 들어 뷰 템플릿 엔진에서 사용될 객체나 Repository Layer 에서 결과로 넘겨준 객체 등이 이들을 말함.
+> - Domain Model
+>   - 도메인이라 불리는 개발 대상을 모든 사람이 동일한 관점에서 이해할 수 있고 공유할 수 있도록 단순화시킨 것을 도메인 모델이라고 한다
+>   - 예를 들어 택시 앱의 경우 배차, 탑승, 요금 등이 모두 도메인이 될 수 있다
+>   - @Entity 가 사용된 영역 역시 도메인 모델이라고 이해하면 됨
+>   - 다만, 무조건 데이터베이스의 테이블과 관계가 있어야 하는 것은 아니다
+>   - VO 처럼 값 객체들도 이 영역에 해당됨
 
+<br/>
 
+- 도메인 계층에서 로직을 처리하는 이유 <br/> 
+ -ex) 주문 취소 로직
 
+- 슈도 코드
+```java
+@Transactional
+public Order cancelOrder(int orderId){
+        // 데이터베이스로부터 주문정보, 결제정보, 배송정보 조회
+        // 배송 취소 해야 하는지 확인
+        // 배송중이라면 취소로 변경
+        // 각 테이블에 취소 상태 Update
+}
+```
+
+- 서비스 계층에서 모든 로직을 처리할 경우
+```java
+@Transactional
+public Order cancelOrder(int orderId){
+    
+    OrderDto order = ordersDao.selectOrders(orderId);
+    BillingDto billing = billingDao.selectBilling(orderId);
+    DeliveryDto delivery = deliveryDao.selectDelivery(orderId);
+        
+    String deliveryStatus = delivery.getStatus();
+    
+    if("IN_PROGRESS".equals(deliveryStatus)) {
+        delivery.setStatus("CANCEL");
+        deliveryDao.update(delivery);
+    }
+    
+    order.setStatus("CANCEL");
+    ordersDao.update(order);
+    
+    billing.setStatus("CANCEL");
+    deliveryDao.update(billing);
+    
+    return order;
+}
+```
+
+> 모든 로직이 서비스 클래스 내부에서 처리됨. 그러다 보니 서비스 계층이 무의미하며, 객체란 단순 데이터 덩어리 역할만..
+
+- 로직을 도메인 모델에서 처리할 경우
+
+```java
+@Transactional
+public Order cancelOrder(int orderId) {
+    
+    Orders order = ordersRepository.findById(orderId);
+    Billing billing = billingRepository.findByOrderId(orderId);
+    Delivery delivery = deliveryRepository.findByOrderId(orderId);
+    
+    delivery cancel();
+    
+    order.cancel();
+    billing.cancel();
+    
+    return order;
+    
+}
+```
+
+> order, billing, delivery 가 각자 본인의 취소 이벤트 처리를 하며, 서비스 메소드는 트랜잭션과 도메인 간의 순서만 보장해 준다.
 
 
 |키워드|내용|
