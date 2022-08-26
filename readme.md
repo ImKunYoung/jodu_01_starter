@@ -673,8 +673,13 @@ public Order cancelOrder(int orderId) {
 
 <br/>
 
+---
+
 ###### 등록, 수정, 삭제 기능 만들기
 
+---
+
+#### - 등록 기능
 - PostApiController
 
 ```java
@@ -831,14 +836,203 @@ public class PostsApiControllerTest {
 
 > Api Controller 테스트를 하는 경우 @WebMvcTest 를 사용하지 않는데 @Web..의 경우 JPA 기능이 작동하지 않음, 외부 연동과 관련된 부분만 활성화됨
 
+---
+
+#### 수정 / 조회 기능
+
+- PostApiController
+
+```java
+import lombok.RequiredArgsConstructor;
+import org.example.jodu_01_Starter.service.posts.PostsService;
+import org.example.jodu_01_Starter.web.dto.PostsResponseDto;
+import org.example.jodu_01_Starter.web.dto.PostsSaveRequestDto;
+import org.example.jodu_01_Starter.web.dto.PostsUpdateRequestDto;
+import org.springframework.web.bind.annotation.*;
+
+@RequiredArgsConstructor
+@RestController
+public class PostApiController {
+
+    private final PostsService postsService;
 
 
+    /*등록한다*/
+    @PostMapping("/api/v1/posts")
+    public Long save(@RequestBody PostsSaveRequestDto requestDto) {
+
+        return postsService.save(requestDto);
+
+    }
 
 
+    /*수정한다*/
+    @PutMapping("/api/v1/posts/{id}")
+    public Long update(@PathVariable Long id, @RequestBody PostsUpdateRequestDto requestDto) {
+
+        return postsService.update(id, requestDto);
+
+    }
 
 
+    /*조회한다*/
+    @GetMapping("/api/v1/posts/{id}")
+    public PostsResponseDto findById(@PathVariable Long id) {
+
+        return postsService.findById(id);
+
+    }
+
+}
+```
+
+![](readmeImage/img_5.png)
+
+|키워드| 내용              |
+|:---|:----------------|
+|@PathVariable| url의 {?} 부분에 접근 |
+
+<br/>
+
+- PostsResponseDto
+
+```java
+import lombok.Builder;
+import lombok.Getter;
+import org.example.jodu_01_Starter.domain.posts.Posts;
+
+@Getter
+public class PostsResponseDto {
+
+    private Long id;
+    private String title;
+    private String content;
+    private String author;
+
+    public PostsResponseDto(Posts entity) {
+        this.id = entity.getId();
+        this.title = entity.getTitle();
+        this.content = entity.getContent();
+        this.author = entity.getAuthor();
+    }
+    
+}
+```
+
+<br/>
+
+- PostsUpdateRequestDto
+
+```java
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+
+@Getter
+@AllArgsConstructor
+@NoArgsConstructor
+@Builder
+public class PostsUpdateRequestDto {
+
+    private String title;
+    private String content;
+
+}
+```
+
+<br/>
+
+- Posts
+
+```java
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+
+import javax.persistence.*;
+
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
+@Getter
+@Entity
+public class Posts {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    @Column(length = 500, nullable = false)
+    private String title;
+
+    @Column(columnDefinition = "TEXT", nullable = false)
+    private String content;
+
+    private String author;
+
+    public void update(String title, String content) {
+        this.title = title;
+        this.content = content;
+    }
+}
+```
+
+<br/>
+
+- PostsService
+
+```java
+import lombok.RequiredArgsConstructor;
+import org.example.jodu_01_Starter.domain.posts.Posts;
+import org.example.jodu_01_Starter.domain.posts.PostsRepository;
+import org.example.jodu_01_Starter.web.dto.PostsResponseDto;
+import org.example.jodu_01_Starter.web.dto.PostsSaveRequestDto;
+import org.example.jodu_01_Starter.web.dto.PostsUpdateRequestDto;
+import org.springframework.stereotype.Service;
+
+import javax.transaction.Transactional;
+
+@RequiredArgsConstructor
+@Service
+public class PostsService {
+
+    private final PostsRepository postsRepository;
+
+    @Transactional
+    public Long save(PostsSaveRequestDto requestDto) {
+
+        return postsRepository.save(requestDto.toEntity()).getId();
+
+    }
 
 
+    @Transactional
+    public Long update(Long id, PostsUpdateRequestDto requestDto) {
+
+        Posts posts = postsRepository.findById(id).orElseThrow(() ->new IllegalArgumentException("해당 게시글이 없습니다. id="+ id));
+
+        posts.update(requestDto.getTitle(), requestDto.getContent());
+
+        return id;
+
+    }
+
+
+    public PostsResponseDto findById(Long id) {
+
+        Posts entity = postsRepository.findById(id).orElseThrow(() ->new IllegalArgumentException("해당 게시글이 없습니다. id="+ id));
+
+        return new PostsResponseDto(entity);
+        
+    }
+
+}
+```
+
+> update 기능에서 데이터베이스에 쿼리를 날리는 부분이 없음 -> JPA 의 영속성 컨텍스트 때문 <br/>
+> 영속성 컨텍스트란, 엔티티를 영구 저장하는 환경임.
 
 
 
