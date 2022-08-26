@@ -484,7 +484,6 @@ public class Order {
 }
 ```
 
-<br/>
 
 - 올바른 사용 에
 ```java
@@ -498,6 +497,24 @@ public class Order {
     }
 }
 ```
+
+<br/>
+
+- JpaRepository 생성
+
+|키워드| 내용                     |
+|:---|:-----------------------|
+|JpaRepository| Posts 클래스로 DB에 접근하게 해줌 |
+
+> JPA 에선 Repository 라고 부르며 인터페이스로 생성됨. 반면 ibatis 나 MyBatis 등에서 DAO 라고 불림 <br/>
+> JpaRepository<Entity, PK Type> 을 상속하면 기본적인 CRUD 메소드가 자동으로 생성됨 <br/>
+> 나중에 프로젝트 규모가 커져 도메인별로 프로젝트를 분리해야 한다면 Entity 클래스와 기본 Repository 는 함께 움직여야 하므로 도메인 패키지에서 함께 관리할 것
+
+
+
+
+
+
 
 
 
