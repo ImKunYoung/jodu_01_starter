@@ -10,7 +10,7 @@ import org.example.jodu_01_Starter.domain.posts.Posts;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class PostSaveRequestDto {
+public class PostsSaveRequestDto {
 
     private String title;
 
