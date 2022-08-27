@@ -1295,7 +1295,20 @@ public class Application {
 
 #### 머스테치 플러그인 설치
 
-- p7
+
+---
+<br/>
+
+#### 4.2 기본 페이지 만들기
+
+- 머스테치 스타터 의존성 등록
+``` implementation 'org.springframework.boot:spring-boot-starter-mustache' ```
+
+
+
+
+
+
 
 
 
