@@ -1302,14 +1302,43 @@ public class Application {
 #### 4.2 기본 페이지 만들기
 
 - 머스테치 스타터 의존성 등록
-``` implementation 'org.springframework.boot:spring-boot-starter-mustache' ```
 
+``` implementation 'org.springframework.boot:spring-boot-starter-mustache ```
 
+- 머스테치 파일 생성 (index.mustache)
 
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>스프링부트 웹서비스</title>
+</head>
+<body>
+	<h1>스프링 부트로 시작하는 웹 서비스</h1>
+</body>
+</html>
+```
 
+- index.mustache 에 URL 매핑
 
+```java
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.GetMapping;
 
+@Controller
+public class IndexController {
 
+    @GetMapping("/")
+    public String index() {
+        return "index";
+    }
+}
+
+```
+
+- 테스트 (Postman)
+![](readmeImage/img_13.png)
 
 
 
