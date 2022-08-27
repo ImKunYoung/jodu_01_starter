@@ -1118,18 +1118,28 @@ public class PostsApiControllerTest {
 }
 ```
 
+---
 
+<br/>
 
+#### H2 데이터베이스를 로컬 환경에서 접근
 
+- properties 추가
+```
+spring.h2.console.enabled=true
+```
 
+- http://localhost:8080/h2-console 로 접속
 
+![](readmeImage/img_7.png)
 
+![](readmeImage/img_6.png)
 
+- 데이터 입력
+![](readmeImage/img_8.png)
 
-
-
-
-
+- API 요청
+![](readmeImage/img_9.png)
 
 
 |키워드|내용|
