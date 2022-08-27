@@ -1205,6 +1205,38 @@ public class Application {
 
 ```
 
+<br/>
+
+- JPA Auditing 테스트 코드 작성하기 (PostRepositoryTest)
+
+```java
+    @Test
+    public void BaseTimeEntity_등록() {
+
+        // given
+        LocalDateTime now = LocalDateTime.of(2022,8,22,0,0,0);
+        postsRepository.save(Posts.builder()
+                .title("title")
+                .content("content")
+                .author("author")
+                .build());
+
+        // when
+        List<Posts> postsList = postsRepository.findAll();
+
+        // then
+        Posts posts = postsList.get(0);
+
+        System.out.println("VVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVvv");
+        System.out.println(">>>>>> createDate="+posts.getCreatedDate());
+        System.out.println(">>>>>> modifiedDate="+posts.getModifiedDate());
+
+        assertThat(posts.getCreatedDate()).isAfter(now);
+        assertThat(posts.getModifiedDate()).isAfter(now);
+
+    }
+```
+
 
 
 
