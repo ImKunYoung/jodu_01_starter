@@ -1141,6 +1141,111 @@ spring.h2.console.enabled=true
 - API 요청
 ![](readmeImage/img_9.png)
 
+<br/>
+
+----
+
+<br/>
+
+#### 3.5 JPA Auditing 으로 생성시간 / 수정시간 자동화하기
+
+|키워드| 내용                                                  |
+|:---|:----------------------------------------------------|
+|JPA Auditing| 엔티티에 특정 작업이 insert, update 될 때마다 반복되는 코드를 자동화할 때 사용 |
+
+- LocalDate 사용
+
+```java
+@Getter
+@MappedSuperclass
+@EntityListeners(AuditingEntityListener.class)
+public class BaseTimeEntity {
+
+    @CreatedDate
+    private LocalDateTime createdDate;
+
+    @LastModifiedDate
+    private LocalDateTime modifiedDate;
+
+}
+```
+
+> BaseTimeEntity 클래스는 모든 Entity 의 상위 클래스가 되어 Entity 들의 createdDate, modifiedDate 를 자동으로 관리하는 역할을 한다.
+
+| 키워드                                            | 내용                                                                                       |
+|:-----------------------------------------------|:-----------------------------------------------------------------------------------------|
+| @MappedSuperclass                              | JPA Entity 클래스들이 BaseTimeEntity 을 상속할 경우 필드들 (createdDate, modifiedDate) 도 칼럼으로 인식하도록 한다 |
+| @EntityListeners(AuditingEntityListener.class) | BaseTimeEntity 클래스에 Auditing 기능을 포함시킨다                                                   |
+| @CreatedDate                                   | Entity 가 생성되어 저장될 때 시간이 자동 저장된다                                                          |
+| @LastModifiedDate                              | 조회한 Entity 의 값을 변경할 때 시간이 자동 저장된다                                                        |
+
+
+- Posts entity 클래스에 상속해줌
+```java
+// ...
+public class Posts extends BaseTimeEntity {
+    // ...
+}
+// ...
+```
+
+- Application 클래스에서 JPA Auditing 어노테이션을 활성화
+```java
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
+
+@EnableJpaAuditing // JPA Auditing 활성화
+@SpringBootApplication
+public class Application {
+    public static void main(String[] args) {
+        SpringApplication.run(Application.class, args);
+    }
+}
+
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 |키워드|내용|
 |:---|:---|
