@@ -1484,6 +1484,85 @@ public class IndexController {
 
 > /posts/save 호출 시 posts-save.mustache 파일을 호출
 
+<br/>
+
+- 등록 버튼의 API 호출을 위한 자바스크립트 코드 추가
+
+```javascript
+var main = {
+    init : function () {
+        let _this = this;
+        $('#btn-save').on('click', function () {
+            _this.save();
+        });
+
+    },
+    save : function () {
+        let data = {
+            title: $('#title').val(),
+            author: $('#author').val(),
+            content: $('#content').val()
+        };
+
+        $.ajax({
+            type: 'POST',
+            url: '/api/v1/posts',
+            dataType: 'json',
+            contentType:'application/json; charset=utf-8',
+            data: JSON.stringify(data)
+        }).done(function() {
+            alert('글이 등록되었습니다.');
+            window.location.href = '/';
+        }).fail(function (error) {
+            alert(JSON.stringify(error));
+        });
+    },
+
+};
+
+main.init();
+```
+
+|키워드| 내용                                                                         |
+|:---|:---------------------------------------------------------------------------|
+|JSON.stringify(data)| Converts a JavaScript value to a JavaScript Object Notation (JSON) string. |
+|window.location.href = '/'| 글 등록이 성공하면 메인페이지 (/) 로 이동                                                  |
+
+브라우저의 스코프는 공용 공간으로 쓰이기 때문에 나중에 로딩된 js 의 init, save 가 먼저 로딩된 js 의 function 을 덮어쓸 수도 있다.
+즉, 함수명이 중복되는 경우가 발생함으로 index.js 만의 유효범위를 만들어 사용하도록 한다. (main.init)
+
+<br/>
+
+- footer 에 index.js 추가
+
+```html
+<script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
+
+<!--index.js 추가-->
+<script src="/js/app/index.js"></script>
+</body>
+</html>
+```
+
+| 키워드                              | 내용                                                                                                                              |
+|:---------------------------------|:--------------------------------------------------------------------------------------------------------------------------------|
+| <script src="/js/app/index.js"\> | - 절대 경로 (/) 로 바로 시작함을 확인할 수 있다. <br/> - 스프링 부트는 기본적으로 src/main/resources/static 에 위치한 자바스크립트, css, 이미지 등 정적 파일들은 URL 에서 / 로 설정됨 |
+
+![](readmeImage/img_15.png)
+
+- 실행
+![](readmeImage/img_16.png)
+![](readmeImage/img_17.png)
+![](readmeImage/img_18.png)
+
+
+
+
+
+
+
+
 |키워드|내용|
 |:---|:---|
 |||
