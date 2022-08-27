@@ -1441,10 +1441,25 @@ public class IndexControllerTest {
 |{{>layout/header}}| {{>}} 는 현재 머스테치 파일 (index.mustache) 을 기준으로 다른 파일을 가져옴 |
 
 
+<br/>
 
+- index.mustache 에 글 등록 버튼 추가
 
+```html
+{{>layout/header}}
 
+	<h1>스프링 부트로 시작하는 웹 서비스</h1>
 
+	<div class="col-md-12">
+		<div class="row">
+			<div class="col-md-6">
+				<a href="/posts/save" role="button" class="btn btn-primary">글 등록</a>
+			</div>
+		</div>
+	</div>
+
+{{>layout/footer}}
+```
 
 
 
