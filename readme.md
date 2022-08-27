@@ -1311,7 +1311,7 @@ public class Application {
 <!DOCTYPE html>
 <html lang="en">
 <head>
-	<meta charset="UTF-8">
+    <meta charset="UTF-8" http-equiv="refresh" content="5">
 	<title>스프링부트 웹서비스</title>
 </head>
 <body>
@@ -1319,6 +1319,12 @@ public class Application {
 </body>
 </html>
 ```
+
+|키워드| 내용       |
+|:---|:---------|
+|`<meta charset="UTF-8" http-equiv="refresh" content="5">`| 5초마다 리로딩 |
+
+
 
 - index.mustache 에 URL 매핑
 
@@ -1376,6 +1382,63 @@ public class IndexControllerTest {
 
 - 결과
 ![](readmeImage/img_14.png)
+
+--- 
+
+<br/>
+
+#### 4.3 게시글 등록 화면 만들기
+
+부트스트랩 라이브러리 외부 CDN 사용 (레이아웃 방식으로, 공통 영역을 별도의 파일로 분리하여 필요한 곳에서 가져다 쓰는)
+
+
+- header.mustache
+
+```html
+<!DOCTYPE HTML>
+<html>
+<head>
+	<title>스프링부트 웹서비스</title>
+	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+
+	<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+</head>
+<body>
+```
+
+- footer.mustache
+
+```html
+<script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
+
+<!--index.js 추가-->
+<script src="/js/app/index.js"></script>
+</body>
+</html>
+```
+
+> - HTML 은 위에서 부터 코드가 실행됨 (head 가 다 실행되고서야 body 가 실행된다) <br/>
+>   - 따라서 페이지 로딩속도를 높이기 위해 css 는 header 에 js 는 footer 에 주로 위치 <br/>
+> - head 가 다 불러지지 않으면 백지 화면만 노출 <br/>
+>  - js 의 용량이 클수록 body 부분의 실행이 늦어짐.
+>  - css 는 화면을 그리는 역할이고 늦게 불러온다면 css 가 적용되지 않은 깨진 화면을 사용자가 보게됨
+> - bootstrap.js 의 경우 제이쿼리가 꼭 있어야만 한다.
+>   - 따라서 제이쿼리를 호출한 뒤에 bootstrap.js 를 호출하도록 한다
+
+- index.mustache 에 레이아웃 적용
+
+```html
+{{>layout/header}}
+
+	<h1>스프링 부트로 시작하는 웹 서비스</h1>
+
+{{>layout/footer}}
+```
+
+|키워드| 내용                                                    |
+|:---|:------------------------------------------------------|
+|{{>layout/header}}| {{>}} 는 현재 머스테치 파일 (index.mustache) 을 기준으로 다른 파일을 가져옴 |
 
 
 
