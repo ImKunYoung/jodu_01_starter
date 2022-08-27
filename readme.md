@@ -1461,9 +1461,28 @@ public class IndexControllerTest {
 {{>layout/footer}}
 ```
 
+<br/>
 
+- 글 등록 버튼 api 호출
 
+```java
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.GetMapping;
 
+@Controller
+public class IndexController {
+
+    // ...
+ 
+    @GetMapping("/posts/save")
+    public String postsSave() {
+        return "posts-save";
+    }
+
+}
+```
+
+> /posts/save 호출 시 posts-save.mustache 파일을 호출
 
 |키워드|내용|
 |:---|:---|
