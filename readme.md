@@ -2231,6 +2231,114 @@ spring.security.oauth2.client.registration.google.scope=profile,email
 ``spring.profiles.include=oauth``
 
 
+---
+
+<br/>
+
+#### 5.3 구글 로그인 연동하기
+
+
+- 사용자 정보 담당 도메인 User 클래스 생성
+
+```java
+package org.example.jodu_01_Starter.domain.user;
+
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import org.example.jodu_01_Starter.domain.BaseTimeEntity;
+
+import javax.persistence.*;
+
+@Getter
+@NoArgsConstructor
+@AllArgsConstructor
+@Entity
+@Builder
+public class User extends BaseTimeEntity {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    @Column(nullable = false)
+    private String name;
+
+    @Column(nullable = false)
+    private String email;
+
+    @Column
+    private String picture;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private Role role;
+
+    public User update(String name, String picture) {
+        this.name = name;
+        this.picture = picture;
+
+        return this;
+    }
+
+    public String getRoleKey() {
+        return this.role.getKey();
+    }
+
+}
+```
+
+|키워드| 내용                                                                                                                                                                                       |
+|:---|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+|@Enumerated(EnumType.STRING)| - JPA 로 데이터베이스로 저장할 때 Enum 값을 어떦 형태로 저장할지를 결정한다 <br/> - 기본적으로 int 로 된 숫자가 저장됨 <br/> - 숫자로 저장되면 데이터베이스로 확인할 때 그 값이 무슨 코드를 의미하는지 알 수가 없슴 <br/> - 따라서 문자열 (EnumTyoe.STRING) 으로 저장될 수 있도록 선언 |
+
+<br/>
+
+- 각 사용자 권한 관리할 Enum 클래스 생성 (Role)
+
+```java
+package org.example.jodu_01_Starter.domain.user;
+
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
+
+@Getter
+@RequiredArgsConstructor
+public enum Role {
+
+    GUEST("ROLE_GUEST", "손님"),
+    USER("ROLE_USER", "일반 사용자");
+
+    private final String key;
+    private final String title;
+
+}
+```
+
+> 스프링 시큐리티에서는 권한 코드에 항상 ROLE_ 이 앞에 있어야만 ROLE_GUEST, ROLE_USER 등으로 지정한다
+
+<br/>
+
+- User 의 CRUD 를 책임질 리포지터리 생성 (UserRepository)
+
+```java
+package org.example.jodu_01_Starter.domain.user;
+
+import org.springframework.data.jpa.repository.JpaRepository;
+
+import java.util.Optional;
+
+public interface UserRepository extends JpaRepository<User, Long> {
+
+    Optional<User> findByEmail(String email);
+
+}
+```
+| 키워드         | 내용                                                                      |
+|:------------|:------------------------------------------------------------------------|
+| Optional<?> | Optional 객체를 사용하면 예상치 못한 NullPointerException 예외를 제공되는 메소드로 간단히 회피할 수 있다 |
+|findByEmail| - 소셜 로그인으로 반환되는 값 중 email 을 통해 이미 생성된 사용자인지 처음 가입하는 사용자인지 판단하기 위한 메소드이다 |
 
 
 
@@ -2252,6 +2360,20 @@ spring.security.oauth2.client.registration.google.scope=profile,email
 
 
 
+Optional 객체를 사용하면 예상치 못한 NullPointerException 예외를 제공되는 메소드로 간단히 회피할 수 있습니다.
+
+
+```java
+```
+
+
+```javascript
+```
+
+
+
+```html
+```
 
 
 |키워드|내용|
