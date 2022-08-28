@@ -290,6 +290,7 @@ public class HelloResponseDtoTest {
 >   - IDE 에서는 CoreMatchers 와 같은 Mather 라이브러리의 자동완성 지원이 약하다.
 
 - 실행결과
+
 ![](readmeImage/img.png)
 
 <br/>
@@ -366,6 +367,7 @@ public class HelloControllerTest {
 | jsonPath | - JSON 응답값을 필드별로 검증할 수 있는 메서드이다. <br/> - $ 을 기준으로 필드명을 명시한다. <br/> - 여기서는 bane 과 amount 를 검증하니 $.name, $.amount 로 검증한다. |
 
 - api 테스트 결과
+
 ![](readmeImage/img_1.png)
 
 
@@ -1136,9 +1138,11 @@ spring.h2.console.enabled=true
 ![](readmeImage/img_6.png)
 
 - 데이터 입력
+
 ![](readmeImage/img_8.png)
 
 - API 요청
+
 ![](readmeImage/img_9.png)
 
 <br/>
@@ -1344,6 +1348,7 @@ public class IndexController {
 ```
 
 - 테스트 (Postman)
+
 ![](readmeImage/img_13.png)
 
 - 테스트 (junit)
@@ -1381,6 +1386,7 @@ public class IndexControllerTest {
 
 
 - 결과
+
 ![](readmeImage/img_14.png)
 
 --- 
@@ -1763,6 +1769,7 @@ public class IndexController {
 
 
 - 결과
+
 ![](readmeImage/img_19.png)
 
 
@@ -1976,6 +1983,7 @@ public class IndexController {
 <br/>
 
 - 결과
+
 ![](readmeImage/vi_1.gif)
 
 
@@ -2085,6 +2093,7 @@ public class PostApiController {
 ```
 
 - 결과
+
 ![](readmeImage/img_20.png)
 
 
