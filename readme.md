@@ -1979,9 +1979,113 @@ public class IndexController {
 ![](readmeImage/vi_1.gif)
 
 
+---
+
+<br/>
+
+#### 게시글 삭제
+
+- 수정화면에 삭제 버튼 추가 (posts-update.mustache)
+
+```html
+<a href="/" role="button" class="btn btn-secondary">취소</a>
+<button type="button" class="btn btn-primary" id="btn-update">수정 완료</button>
+<button type="button" class="btn btn-danger" id="btn-delete">삭제</button>
+```
+
+|키워드| 내용                                                               |
+|:---|:-----------------------------------------------------------------|
+|btn-delete| - 삭제 버튼을 수정 완료 버튼 앞에 추가한다 <br/> - 해당 버튼 클릭 시 JS 에서 이벤트를 수신할 예정.. |
 
 
 
+- 삭제 이벤트를 진행할 JS 코드 추가 (index.js)
+```javascript
+ var main = {
+ init: function () {
+  let _this = this;
+  
+  //...
+  
+  $('#btn-delete').on('click', function () {
+   _this.delete();
+  });
+ },
+ 
+ // ...
+ 
+ delete: function () {
+  let id = $('#id').val();
+
+  $.ajax({
+   type: 'DELETE',
+   url: '/api/v1/posts/' + id,
+   dataType: 'json',
+   contentType: 'application/json; charset=utf-8',
+  }).done(function () {
+   alert('글이 삭제되었습니다.');
+   window.location.href = '/';
+  }).fail(function (error) {
+   alert(JSON.stringify(error));
+  });
+ },
+
+};
+
+main.init();
+```
+
+<br/>
+
+- 삭제 API 생성 (PostsService)
+
+```java
+@RequiredArgsConstructor
+@Service
+public class PostsService {
+
+    private final PostsRepository postsRepository;
+
+    // ...
+
+    @Transactional
+    public void delete(Long id) {
+        Posts posts = postsRepository.findById(id).orElseThrow(() -> new IllegalArgumentException("해당 게시글이 없습니다. id="+id));
+        postsRepository.delete(posts);
+    }
+
+}
+```
+
+|키워드| 내용                                                                                                                                                                    |
+|:---|:----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+|postsRepository.delete(posts)| - JpaRepository 에서 이미 delete 메소드를 지원하고 있으니 이를 활용해도 됨 <br/> - 엔티티를 파라미터로 삭제할 수도 있고, deleteById 메소드를 이용하면 id 로 삭제할 수도 있다 <br/> - 존재하는 Posts 인지 확인을 위해 엔티티 조회 후 그대로 삭제한다 |
+
+<br/>
+
+- 삭제 API 생성 (PostsApiController)
+
+```java
+@RequiredArgsConstructor
+@RestController
+public class PostApiController {
+
+    private final PostsService postsService;
+
+    // ...
+
+    /*삭제한다*/
+    @DeleteMapping("/api/v1/posts/{id}")
+    public Long delete(@PathVariable Long id) {
+        postsService.delete(id);
+        return id;
+    }
+
+}
+```
+
+- 결과
+![](readmeImage/img_20.png)
 
 
 
