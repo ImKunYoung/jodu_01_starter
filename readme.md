@@ -2209,16 +2209,26 @@ public enum CommonOAuth2Provider {
 
 <br/>
 
+- application-oauth 등록 (application-oauth.properties  --- .gitignore 처리)
+
+```
+spring.security.oauth2.client.registration.google.client-id=클라이언트 ID
+spring.security.oauth2.client.registration.google.client-secret=클라이언트 보안 비밀
+spring.security.oauth2.client.registration.google.scope=profile,email
+```
+
+|키워드| 내용                                                                                                                                                                                                                                                                                                                            |
+|:---|:------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+|scope=profile,email| - 많은 예제에서는 이 scope 를 별도로 등록하지 않고 있다 <br/> - 기본값이 openid,profile,email 이기 때문 <br/> - 강제로 profile,email 를 등록한 이유는 openid 라는 scope 가 있으면 Open id Provider 로 인식하기 때문 <br/> - 이렇게 되면 OpenId Provider 인 서비스 (구글)와 그렇지 않은 서비스 (네이버/카카오 등)로 나눠서 각각OAuthService를 만들어야 한다 <br/> - 하나의 OAuth2Service로 사용하기 위해 일부로 openid scope 를 빼고 등록한다 |
 
 
+> 스프링 부트에선 properties 의 이름을 application-xxx.properties 로 만들면 xxx 라는 이름의 profile 이 생성되어 이를 통해 관리할 수 있다
+> 즉, profile=xxx 라는 식으로 호출하면 해당 properties 의 설정을 가져올 수 있음.
 
 
+- application.properties 에 다음 코드를 추가
 
-
-
-
-
-
+``spring.profiles.include=oauth``
 
 
 
