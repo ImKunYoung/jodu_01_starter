@@ -2098,6 +2098,133 @@ public class PostApiController {
 
 
 
+---
+
+### 05 스프링 시큐리티와 OAuth 2.0 으로 로그인 기능 구현하기
+
+스프링 시큐리티는 막강한 인증 (Authentication) 과 인가 (Authorization) 혹은 권한 부여 기능을 가진
+프레임워크로 사실상 스프링 기반의 애플리케이션에서는 보안을 위한 표준이다. 인터셉터, 필터 기반의 보안 기능을 
+구현하는 것보다 스프링 시큐리티를 통해 구현하는 것을 적극적으로 권장하고 있다.
+
+---
+<br/>
+
+#### 5.1 스프링 시큐리티와 스프링 시큐리티 Oauth2 클라이언트
+
+> #### 로그인 기능을 직접 구현할 경우 다음을 전부 구현해야 함
+>
+> - 로그인 시 보안
+> - 회원가입 시 이메일 혹은 전화번호 인증
+> - 비밀번호 찾기
+> - 비밀번호 변경
+> - 회원정보 변경
+
+OAuth 로그인 구현 시 앞선 목록의 것을 구글, 페이스북, 네이버 등에 맡기고 서비스 개발에 집중할 수 있다.
+
+<br/>
+
+- spring-security-oauth2-autoconfigure vs Spring Security Oauth2 Client
+  
+  - spring-security-oauth2-autoconfigure
+    - 스프링부트 2에서도 1.5에서 쓰던 설정을 그대로 사용할 수 있다
+    - 기존에 안전하게 작동하던 코드를 그대로 사용할 수 있음
+  - Spring Security Oauth2 Client
+    - 스프링 팀에서 기존 1.5 에서 사용되던 spring-security-oauth 프로젝트는 유지 상태로 결정했으며 더는 신규 기능의 추가는 없고 버그 수정 정도의 기능만 추가될 예정. 신규 기능은 새 oauth2 라이브러리에서만 지원하겠다고 선언
+    - 스프링 부트용 라이브러리 (starter) 출시
+    - 기존에 사용되던 방식은 확장 포인트가 적절하게 오픈되어 있지 않아 직접 상속하거나 오버라이딩 해야 하고 신규 라이브러리의 경우 확장 포인트를 고려해서 설계된 상태
+
+<br/>
+
+- 스프링 부트2 방식의 spring-security-oauth2-autoconfigure 의 경우 다음 두 가지를 확인해라
+
+![](readmeImage/img_21.png)
+
+> 스프링 부트 1.5 방식에서는 url 주소를 모두 명시해야함. 반면 2.0 에서는 client 인증 정보만 입력
+> 1.5 에서 직접 입력했던 값들은 2.0에선 모두 enum 으로 대체됨
+
+- CommonOAuth2Provider 라는 enum 이 새롭게 추가되어 구글, 깃허브, 페이스북, 옥타의 기본 설정값은 모두 여기서 제공됨
+
+```java
+import java.sql.ClientInfoStatus;
+
+public enum CommonOAuth2Provider {
+
+ Google {
+  @Override
+  public Builder getBuilder(String registrationId) {
+   ClientRegistration.Builder builder = getBuilder(registrationId, ClientAuthenticationMethod.BASIC, DEFAULT_REDIRECT_URI);
+   builder.scope("openid", "profile", "email");
+   builder.authorizationUri("https://accounts.google.com/o/oauth2/auth");
+   builder.tokenUri("https://accounts.google.com/o/oauth2/token");
+   builder.jwkSetUri("https://www.googleapis.com/oauth2/v3/certs");
+   builder.userInfoUri("https://www.googleapis.com/oauth2/v3/userinfo");
+   builder.userNameAttributeName("name");
+   builder.clientName("Google");
+   return builder;
+  }
+  
+ },
+ // ...
+}
+```
+
+> 이외에 다른 소셜 로그인 (네이버, 카카오 등)을 추가한다면 직접 다 추가해주어야 함
+
+---
+
+<br/>
+
+### 5.2 구글 서비스 등록
+
+- 구글 서비스에 신규 서비스 생성 (https://console.cloud.google.com)
+
+![](readmeImage/img_23.png)
+
+![](readmeImage/img_22.png)
+
+![](readmeImage/img_24.png)
+
+![](readmeImage/img_25.png)
+
+
+| 키워드             | 내용                                                |
+|:----------------|:--------------------------------------------------|
+| 애플리케이션 이름       | 구글 로그인 시 사용자에게 노추로딜 애플리케이션 이름을 말함                 |
+| 담당자 이메일 주소      | 사용자 동의 화면에서 노출될 이메일 주소로 보통은 서비스의 help 이메일 주소를 사용함 |
+| Google API 의 범위 | 프로젝트에 등록할 구글 서비스에서 사용할 범위 목록임.                    |
+
+- OAuth 클라이언트 ID 만들기
+
+![](readmeImage/img_27.png)
+
+![](readmeImage/img_26.png)
+
+
+> ##### 승인된 리디렉션 URI
+> - 서비스에서 파라미터로 인증 정보를 주었을 때 인증이 성공하면 구글에서 리다이렉트할 URL 이다
+> - 스프링 부트 2버전의 시큐리티에서는 기본적으로 {도메인}/login/oauth2/code/{소셜서비스코드}로 리다이렉트 URL을 지원하고 있다
+> - 사용자가 별도로 리다이렉트 URL 을 지원하는 Controller 를 만들 필요가 없으며 시큐리티에서 이미 구현해 놓은 상태이다
+> - 현재는 개발 단계이므로 http://localhost:8080/login/oauth2/code/google 로만 등록한다
+> - AWS 서버에 배포하게 되면 localhost 외에 추가로 주소를 추가해야하며, 이는 이후 단계에서 진행한다
+
+<br/>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
