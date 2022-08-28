@@ -1552,9 +1552,258 @@ main.init();
 ![](readmeImage/img_15.png)
 
 - 실행
+
 ![](readmeImage/img_16.png)
 ![](readmeImage/img_17.png)
 ![](readmeImage/img_18.png)
+
+---
+
+<br/>
+
+#### 4.4 전체 조회 화면 만들기
+
+- index.mustache
+
+```html
+{{>layout/header}}
+
+	<h1>스프링 부트로 시작하는 웹 서비스</h1>
+
+	<div class="col-md-12">
+		<div class="row">
+			<div class="col-md-6">
+				<a href="/posts/save" role="button" class="btn btn-primary">글 등록</a>
+			</div>
+		</div>
+
+	<br>
+
+		<!--목록 출력 영역-->
+		<table class="table table-horizontal table-bordered">
+			<thead class="thead-strong">
+			<tr>
+				<th>게시글번호</th>
+				<th>제목</th>
+				<th>작성자</th>
+				<th>최종수정일</th>
+			</tr>
+			</thead>
+			<tbody id="tbody">
+			{{#posts}}
+				<tr>
+					<td>{{id}}</td>
+					<td><a href="/posts/update/{{id}}">{{title}}</a></td>
+					<td>{{author}}</td>
+					<td>{{modifiedDate}}</td>
+				</tr>
+			{{/posts}}
+			</tbody>
+		</table>
+	</div>
+
+{{>layout/footer}}
+```
+
+| 키워드        | 내용                                                       |
+|:-----------|:---------------------------------------------------------|
+| {{#posts}} | - posts 라는 List 를 순회한다 <br/> - Java 의 for 문과 동일하게 생각하면 됨 |
+| {{id}}     | - List 에서 뽑아낸 객체의 필드를 사용한다                               |
+
+
+
+- repository
+
+```java
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+
+import java.util.List;
+
+public interface PostsRepository extends JpaRepository<Posts, Long> {
+
+    @Query("SELECT p FROM Posts p ORDER BY p.id DESC")
+    List<Posts> findAllDesc();
+    
+}
+```
+
+> 규모가 있는 프로젝트에서의 FK 의 조인, 복잡한 조건 등으로 인해 Entity 클래스만으론 처리하기 어려워
+> 조회용 프레임워크를 추가로 사용함. ex) querydsl, jooq, MyBatis 등이 있음. 조회는 위 3가지 프레임워크
+> 중 하나를 통해 조회하고 등록/수정/삭제 등은 SpringDataJpa 를 통해 진행함. 그러나 Querydsl 을 추천
+> <br/>
+> 
+> 1. 타입 안정성이 보장됨
+>    - 단순 문자열로 쿼리를 생성하는 것이 아니라, 메소드를 기반으로 쿼리를 생성하기 때문에 오타나 존재하지 않는 컬럼명을 명시할 경우 IDE 에서 자동으로 검출됨. 이 장점은 Jooq 에서도 지원하는 장점이지만, MyBatis 에서는 지원하지 않는다.
+> 2. 국내 많은 회사에서 사용 중
+>    - 쿠팡, 배민 등 JPA 를 적극적으로 사용하는 회사에서는 Querydsl 를 적극적으로 사용 중이다.
+> 3. 래퍼런스가 많음
+>    - 많은 회사와 개발자들이 사용하다보니 그만큼 국내 자료가 많다.
+
+<br/>
+
+- PostsService 에 findAllDesc() 추가
+
+```java
+import lombok.RequiredArgsConstructor;
+import org.example.jodu_01_Starter.domain.posts.Posts;
+import org.example.jodu_01_Starter.domain.posts.PostsRepository;
+import org.example.jodu_01_Starter.web.dto.PostsListResponseDto;
+import org.example.jodu_01_Starter.web.dto.PostsResponseDto;
+import org.example.jodu_01_Starter.web.dto.PostsSaveRequestDto;
+import org.example.jodu_01_Starter.web.dto.PostsUpdateRequestDto;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
+import java.util.stream.Collectors;
+
+@RequiredArgsConstructor
+@Service
+public class PostsService {
+
+    private final PostsRepository postsRepository;
+
+    @Transactional
+    public Long save(PostsSaveRequestDto requestDto) {
+        return postsRepository.save(requestDto.toEntity()).getId();
+    }
+
+    @Transactional
+    public Long update(Long id, PostsUpdateRequestDto requestDto) {
+        Posts posts = postsRepository.findById(id).orElseThrow(() ->new IllegalArgumentException("해당 게시글이 없습니다. id="+ id));
+        posts.update(requestDto.getTitle(), requestDto.getContent());
+        return id;
+    }
+
+    public PostsResponseDto findById(Long id) {
+        Posts entity = postsRepository.findById(id).orElseThrow(() ->new IllegalArgumentException("해당 게시글이 없습니다. id="+ id));
+        return new PostsResponseDto(entity);
+    }
+
+    @Transactional(readOnly = true)
+    public List<PostsListResponseDto> findAllDesc() {
+        return postsRepository.findAllDesc().stream().map(PostsListResponseDto::new).collect(Collectors.toList());
+    }
+
+}
+```
+
+|키워드| 내용                                                             |
+|:---|:---------------------------------------------------------------|
+|@Transactional(readOnly = true)| - (readOnly = true) 를 주면 트랜잭션 범위는 유지하되, 조회 기능만 남겨두어 조회 속도가 개선됨 |
+
+> - 람다식 <br/>
+> `.map(PostsListResponseDto::new)` 의 코드는 `map(posts -> new PostListResponseDto(posts)` 와 같음 <br/>
+> postsRepository 의 결과로 넘어온 Posts 의 Stream 을 map 을 통해 PostListResponseDto 로 변환 -> List 로 반환하는 메소드임
+
+<br/>
+
+- PostsListResponseDto 생성
+
+```java
+import lombok.Getter;
+import org.example.jodu_01_Starter.domain.posts.Posts;
+
+import java.time.LocalDateTime;
+
+@Getter
+public class PostsListResponseDto {
+
+    private Long id;
+    private String title;
+    private String author;
+    private LocalDateTime modifiedDate;
+
+    public PostsListResponseDto(Posts entity) {
+        this.id = entity.getId();
+        this.title = entity.getTitle();
+        this.author = entity.getAuthor();
+        this.modifiedDate = entity.getModifiedDate();
+    }
+
+}
+```
+
+<br/>
+
+- IndexController 수정
+
+```java
+import lombok.RequiredArgsConstructor;
+import org.example.jodu_01_Starter.service.posts.PostsService;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.GetMapping;
+
+@RequiredArgsConstructor
+@Controller
+public class IndexController {
+
+    private final PostsService postsService;
+
+    @GetMapping("/")
+    public String index(Model model) {
+        model.addAttribute("posts", postsService.findAllDesc());
+        return "index";
+    }
+
+    @GetMapping("/posts/save")
+    public String postsSave() {
+        return "posts-save";
+    }
+
+}
+```
+
+| 키워드                      | 내용                                                                                                             |
+|:-------------------------|:---------------------------------------------------------------------------------------------------------------|
+| @RequiredArgsConstructor | 생성자 주입                                                                                                         |
+| Model                    | - 서버 템플릿 엔진에서 사용할 수 있는 객체를 저장할 수 있다 <br/> - 여기서는 postsServiceAllDesc() 로 가져온 결과를 posts 로 index.mustache 에 전달한다 |
+
+
+- 결과
+![](readmeImage/img_19.png)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
