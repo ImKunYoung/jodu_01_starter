@@ -1976,10 +1976,7 @@ public class IndexController {
 <br/>
 
 - 결과
-![](readmeImage/ezgif.com-gif-maker (1).gif)
-
-
-
+![](readmeImage/vi_1.gif)
 
 
 
