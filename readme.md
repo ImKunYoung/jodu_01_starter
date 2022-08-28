@@ -2341,6 +2341,22 @@ public interface UserRepository extends JpaRepository<User, Long> {
 |findByEmail| - 소셜 로그인으로 반환되는 값 중 email 을 통해 이미 생성된 사용자인지 처음 가입하는 사용자인지 판단하기 위한 메소드이다 |
 
 
+---
+
+<br/>
+
+#### 스프링 시큐리티 설정
+
+- 스프링 시큐리티 관련 의존성 추가
+
+``implementation 'org.springframework.boot:spring-boot-starter-oauth2-client'``
+
+|키워드| 내용                                                                                                                           |
+|:---|:-----------------------------------------------------------------------------------------------------------------------------|
+|spring-boot-starter-oauth2-client| - 소셜 로그인 등 클라이언트 입장에서 소셜 기능 구현 시 필요한 의존성이다 <br/> - spring-security-oauth2-client 와 spring-sercurity-oauth2-jose 를 기본으로 관리해준다 |
+
+
+- OAuth 라이브러리를 이용한 소셜 로그인 설정 코드 저장 (SecurityConfig)
 
 
 
@@ -2360,7 +2376,17 @@ public interface UserRepository extends JpaRepository<User, Long> {
 
 
 
-Optional 객체를 사용하면 예상치 못한 NullPointerException 예외를 제공되는 메소드로 간단히 회피할 수 있습니다.
+
+
+
+
+
+
+
+
+
+
+
 
 
 ```java
