@@ -1766,22 +1766,217 @@ public class IndexController {
 ![](readmeImage/img_19.png)
 
 
+---
+
+<br/>
+
+#### 4.5 게시글 수정, 삭제 화면 만들기
 
 
+- 게시글 수정 API
 
+```java
+import lombok.RequiredArgsConstructor;
+import org.example.jodu_01_Starter.service.posts.PostsService;
+import org.example.jodu_01_Starter.web.dto.PostsResponseDto;
+import org.example.jodu_01_Starter.web.dto.PostsSaveRequestDto;
+import org.example.jodu_01_Starter.web.dto.PostsUpdateRequestDto;
+import org.springframework.web.bind.annotation.*;
 
+@RequiredArgsConstructor
+@RestController
+public class PostApiController {
 
+    private final PostsService postsService;
 
+    // ...
 
+    /*수정한다*/
+    @PutMapping("/api/v1/posts/{id}")
+    public Long update(@PathVariable Long id, @RequestBody PostsUpdateRequestDto requestDto) {
+        return postsService.update(id, requestDto);
+    }
 
+    // ...
+ 
+}
+```
 
+<br/>
 
+- 게시글 수정 화면 (posts-update.mustache)
 
+```html
+{{>layout/header}}
 
+<h1>게시글 수정</h1>
 
+<div class="col-md-12">
+	<div class="col-md-4">
+		<form>
+			<div class="form-group">
+				<label for="title">글 번호</label>
+				<input type="text" class="form-control" id="id" value="{{post.id}}" readonly>
+			</div>
+			<div class="form-group">
+				<label for="title">제목</label>
+				<input type="text" class="form-control" id="title" value="{{post.title}}">
+			</div>
+			<div class="form-group">
+				<label for="author"> 작성자 </label>
+				<input type="text" class="form-control" id="author" value="{{post.author}}" readonly>
+			</div>
+			<div class="form-group">
+				<label for="content"> 내용 </label>
+				<textarea class="form-control" id="content">{{post.content}}</textarea>
+			</div>
+		</form>
 
+		<a href="/" role="button" class="btn btn-secondary">취소</a>
+		<button type="button" class="btn btn-primary" id="btn-update">수정 완료</button>
+		<button type="button" class="btn btn-danger" id="btn-delete">삭제</button>
 
+	</div>
+</div>
 
+{{>layout/footer}}
+```
+
+|키워드| 내용                                                                                      |
+|:---|:----------------------------------------------------------------------------------------|
+|{{post.id}}| - 머스테치는 객체의 필드 접근 시 점 (Dot) 으로 구분한다 <br/> - 즉, Post 클래스의 id 에 대한 접근은 post.id 로 사용할 수 있다 |
+|readonly| - input 태그에 읽기 기능만 허용하는 속성이다. <br/> - id 와 author 는 수정할 수 없도록 읽기만 허용하도록 추가함             |
+
+<br/>
+
+- update function 추가
+
+```javascript
+var main = {
+    init : function () {
+
+        // ...
+     
+        $('#btn-update').on('click', function () {
+            _this.update();
+        });
+
+    },
+ 
+    // ...
+ 
+    update : function () {
+        let data = {
+            title: $('#title').val(),
+            content: $('#content').val()
+        };
+
+        let id = $('#id').val();
+
+        $.ajax({
+            type: 'PUT',
+            url: '/api/v1/posts/'+id,
+            dataType: 'json',
+            contentType:'application/json; charset=utf-8',
+            data: JSON.stringify(data)
+        }).done(function() {
+            alert('글이 수정되었습니다.');
+            window.location.href = '/';
+        }).fail(function (error) {
+            alert(JSON.stringify(error));
+        });
+    },
+
+};
+
+main.init();
+```
+
+| 키워드                          | 내용                                                                                                                                           |
+|:-----------------------------|:---------------------------------------------------------------------------------------------------------------------------------------------|
+| $('#btn-update').on('click') | - btn-update 라는 id 를 가진 HTML 요소에 click 이벤트가 발생할 때 update function 을 실행하도록 이벤트를 등록                                                            |
+| update: function()           | - 신규로 추가될 update function 이다.                                                                                                                |
+| type:'PUT'                   | - 여러 HTTP Method 중 PUT 메소드를 선택한다 <br/> - PostsAPIController 에 있는 API 에서 이미 @PutMapping 으로 선언했기 때문에 PUT 을 사용해야 한다 (REST 규약에 맞게 설정된 것임)  <br/> |
+| url: '/api/v1/posts/'+id                    | - 어느 게시글을 수정할지 URL Path 로 구분하기 위해 Path 에 id를 추가한다                                                                                            |
+
+> REST 에서 CRUD 는 다음과 같이 HTTP Method 에 매핑된다
+> - 생성 (Create) - POST
+> - 읽기 (Read) - GET
+> - 수정 (Update) - PUT
+> - 삭제 (Delete) - DELETE
+
+<br/>
+
+- 수정 페이지 이동 기능 추가
+
+```html
+{{>layout/header}}
+
+	<h1>스프링 부트로 시작하는 웹 서비스</h1>
+
+     
+     <!--...-->
+
+		<!--목록 출력 영역-->
+		<table class="table table-horizontal table-bordered">
+			<thead class="thead-strong">
+			<tr>
+				<th>게시글번호</th>
+				<th>제목</th>
+				<th>작성자</th>
+				<th>최종수정일</th>
+			</tr>
+			</thead>
+			<tbody id="tbody">
+			{{#posts}}
+				<tr>
+					<td>{{id}}</td>
+					<td><a href="/posts/update/{{id}}">{{title}}</a></td>
+					<td>{{author}}</td>
+					<td>{{modifiedDate}}</td>
+				</tr>
+			{{/posts}}
+			</tbody>
+		</table>
+	</div>
+
+{{>layout/footer}}
+```
+
+| 키워드                                   | 내용                                                                 |
+|:--------------------------------------|:-------------------------------------------------------------------|
+| <a href="/posts/update/{{id}}"\></a\> | - 타이틀 {title} 에 a tag 를 추가한다 <br/> - 타이틀을 클릭하면 해당 게시글의 수정화면으로 이동한다 |
+
+<br/>
+
+- 수정화면 GET (read) 메소드 추가
+
+```java
+
+@RequiredArgsConstructor
+@Controller
+public class IndexController {
+
+    private final PostsService postsService;
+
+    // ...
+ 
+    @GetMapping("/posts/update/{id}")
+    public String postsUpdate(@PathVariable Long id, Model model) {
+
+        PostsResponseDto dto = postsService.findById(id);
+        model.addAttribute("post", dto);
+
+        return "posts-update";
+    }
+
+}
+```
+
+<br/>
+
+- 결과
+![](readmeImage/ezgif.com-gif-maker (1).gif)
 
 
 
