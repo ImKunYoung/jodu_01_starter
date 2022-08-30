@@ -2671,25 +2671,170 @@ public class IndexController {
 
 ![](readmeImage/img_33.png)
 
+---
+
+<br/>
+
+#### 5.4 어노테이션 기반으로 개선하기
+
+> 반복되는 코드 ``SessionUser user = (SessionUser) httpSession.getAttribute("user");`` 를 어노테이션을 통해 메소드 인자로 세션값을 바로 받을 수 있게 변경해보자!
+
+- @LoginUser 생성
+
+```java
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
+
+@Target(ElementType.PARAMETER)
+@Retention(RetentionPolicy.RUNTIME)
+public @interface LoginUser {
+}
+```
+
+|키워드| 내용                                                                                                                         |
+|:---|:---------------------------------------------------------------------------------------------------------------------------|
+|@Target(ElementType.PARAMETER)| - 이 어노테이션이 생성될 수 있는 위치를 지정함 <br/> - PARAMETER 로 지정했으니 메소드의 파라미터로 선언된 객체에서만 사용 가능 <br/> - 이 외에도 클래스 선언문에 쓸 수 있는 TYPE 등이 있다! |
+|@interface| - 이 파일을 어노테이션 클래스로 지정한다 <br/> - LoginUser 라는 이름을 가진 어노테이션이 생성되었다고 보면 됨                                                     |
+|@Retention| - 메모리를 어느시점에 할당할 것인지 지정하는 어노테이션임                                                                                           |
 
 
+- @Retention
+
+| 키워드     | 내용                                                                |
+|:--------|:------------------------------------------------------------------|
+| SOURCE  | 컴파일러가 컴파일할때 해당 어노테이션의 메모리를 버럼 (사실상 어노테이션을 주석처럼 사용하는 것)            |
+| CLASS   | 컴파일시에는 어노테이션의 메모리를 가져가지만 런타임시에는 사라진다.                             |
+| RUNTIME | JVM 이 자바 바이트코드가 담긴 class 파일에서 런타임 환경을 구성하고 런타임을 종료할 때까지 메모리는 살아있따 |
 
 
+<br/>
+
+- LoginUserArgumentResolver
+
+```java
+import lombok.RequiredArgsConstructor;
+import org.example.jodu_01_Starter.config.auth.dto.SessionUser;
+import org.springframework.core.MethodParameter;
+import org.springframework.stereotype.Component;
+import org.springframework.web.bind.support.WebDataBinderFactory;
+import org.springframework.web.context.request.NativeWebRequest;
+import org.springframework.web.method.support.HandlerMethodArgumentResolver;
+import org.springframework.web.method.support.ModelAndViewContainer;
+
+import javax.servlet.http.HttpSession;
+
+@RequiredArgsConstructor
+@Component
+public class LoginUserArgumentResolver implements HandlerMethodArgumentResolver {
+
+    private final HttpSession httpSession;
+
+    @Override
+    public boolean supportsParameter(MethodParameter parameter) {
+        boolean isLoginUserAnnotation = parameter.getParameterAnnotation(LoginUser.class)!=null;
+        boolean isUserClass = SessionUser.class.equals(parameter.getParameterType());
+
+        return isLoginUserAnnotation && isUserClass;
+    }
+
+    @Override
+    public Object resolveArgument(MethodParameter parameter, ModelAndViewContainer mavContainer, NativeWebRequest webRequest, WebDataBinderFactory binderFactory) throws Exception {
+        return httpSession.getAttribute("user");
+    }
+}
+```
+
+| 키워드                 | 내용                                                                                                                      |
+|:--------------------|:------------------------------------------------------------------------------------------------------------------------|
+| supportsParameter() | - 컨트롤러 메서드의 특정 파라미터를 지원하는지 판단 <br/> - 여기선 파라미터에 @LoginUser 어노테이션이 붙어 있고, 파라미터 클래스 타입이 SessionUser.class 인 경우 true 를 반환함 |
+| resolveArgument()   | - 파라미터에 전달할 객체를 생성함 <br/> - 여기선 세션에 객체를 가져옴                                                                             |
+|@Component| - Bean Configuration 파일어 Bean 을 따로 등록하지 않아도 사용할 수 있다                                                                    |
 
 
+<br/>
+
+- LoginUserArgumentResolver 가 스프링에서 인식될 수 있도록 설정 (WebConfig)
+
+```java
+import lombok.RequiredArgsConstructor;
+import org.example.jodu_01_Starter.config.auth.LoginUserArgumentResolver;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.web.method.support.HandlerMethodArgumentResolver;
+import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
+
+import java.util.List;
+
+@RequiredArgsConstructor
+@Configuration
+public class WebConfig implements WebMvcConfigurer {
+
+    private final LoginUserArgumentResolver loginUserArgumentResolver;
+
+    @Override
+    public void addArgumentResolvers(List<HandlerMethodArgumentResolver> argumentResolvers) {
+        argumentResolvers.add(loginUserArgumentResolver);
+    }
+
+}
+```
+
+|키워드| 내용   |
+|:---|:-----|
+|@Configuration| 빈 등록 |
 
 
+- 스프링 MVC 패턴
+
+![](readmeImage/img_37.png)
+
+| 키워드     | 내용                                                                                                                   |
+|:--------|:---------------------------------------------------------------------------------------------------------------------|
+| 핸들러 매핑  | - Dispatcher Servlet 이 요청 URI 가 어떤 핸들러와 매핑되는지 찾는 과정이다 <br/> - 핸들러 매핑은 요청과 알맞은 핸들러 객체를 Dispatcher Servlet 에 리턴한다      |
+| 핸들러 어댑터 | - 핸들러 매핑에서 리턴받은 핸들러 객체를 가지고 이에 맞는 어댑터를 찾는 과정이다 <br/> - 어댑터란 2개 이상의 인터페이스에 스펙이 맞지 않을 때 중간에 이 스펙을 맞도록 변환해주는 역할을 하는 객체임 |
 
 
+<br>
 
+- IndexController 에 적용
 
+```java
+import lombok.RequiredArgsConstructor;
+import org.example.jodu_01_Starter.config.auth.LoginUser;
+import org.example.jodu_01_Starter.config.auth.dto.SessionUser;
+import org.example.jodu_01_Starter.service.posts.PostsService;
+import org.example.jodu_01_Starter.web.dto.PostsResponseDto;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 
+@RequiredArgsConstructor
+@Controller
+public class IndexController {
 
+ private final PostsService postsService;
 
+ @GetMapping("/")
+ public String index(Model model, @LoginUser SessionUser user) {
+  model.addAttribute("posts", postsService.findAllDesc());
 
+  if (user != null) {
+   model.addAttribute("userName", user.getName());
+  }
 
+  return "index";
+ }
 
+ // ...
 
+}
+```
+
+|키워드| 내용                                                                                                                         |
+|:---|:---------------------------------------------------------------------------------------------------------------------------|
+|@LoginUser SessionUser user| - 기존에 (User) httpSession.getAttribute("user") 로 가져오던 세션 정보 값이 개선됨 <br/> - 이제는 어느 컨트롤러든지 @LoginUser 만 사용하면 세션 정보를 가져올 수 있다! |
 
 
 
@@ -2721,6 +2866,11 @@ public class IndexController {
 ```java
 
 ```
+
+
+
+
+
 
 
 
