@@ -1260,7 +1260,7 @@ public class Application {
 > 문자열을 만든 뒤 이 문자열을 HTML 로 변환하여 브라우저로 전달한다. 앞선 코드는 HTML 생성과정 syso("test"); 를 실행할 뿐이며,
 > 이때의 자바 스크립트 코드는 단순한 문자열임. (이를 서버 사이드 렌더링, SSR)
 
-![img.png](img.png)
+![](readmeImage/img_34.png)
 
 <br/>
 
@@ -1268,8 +1268,7 @@ public class Application {
 > 예시로 Vue.js 나 React.js 를 이용한 SPA (Single Page Application) 은 브라우저에서 화면을 생성함. 즉, 서버에서 이미 코드가 벗어난 경우.. <br/>
 > 따라서 서버에서는 Json 혹은 Xml 형식의 데이터만 전달하고 클라이언트에서 조립해야 함. (이를 클라이언트 사이드 렌더링, CSR... https://sudalkim.tistory.com/22 참조) 
 
-![img_1.png](img_1.png)
-
+![](readmeImage/img_35.png)
 
 > 클라이언트 템플릿 엔진에서 SSR 을 적용하기 위해선 즉, 자바스크립트 프레임워크의 화면 생성 방식을 서버에서 실행하기 위해선 Nashorn, J2V8 이 있다.
 
@@ -2642,6 +2641,49 @@ public class IndexController {
 |:---|:---------------------------------------------------------------------------------------------------------------------------------------------|
 |(SessionUser) httpSession.getAttribute("user")| - 앞서 작성된 CustomOAuth2UserService 에서 로그인 성공 시 세션에 SessionUser 를 저장하도록 구성함 <br/> - 즉, 로그인 성공 시 httpSession.getAttribute("user") 에서 값을 가져올 수 있다 |
 |if(user !=null)| - 세션에 저장된 값이 있을 때만 model 에 userName 으로 등록한다 <br/> - 세션에 저장된 값이 없으면 model 엔 아무런 값이 없는 상태이니 로그인 버튼이 보임                                         |
+
+
+- 비로그인 시 
+
+![](readmeImage/img_31.png)
+
+- 로그인 시
+
+![](readmeImage/img_28.png)
+
+- 로그아웃 시
+
+![](readmeImage/img_29.png)
+
+- h2 db 에 사용자 정보가 입력되었는 지 확인
+
+![](readmeImage/img_30.png)
+
+- role 이 guest 로 설정되어 있기에 글 등록이 안되는 것 또한 확인할 수 있다.
+
+![](readmeImage/img_32.png)
+
+- ROLE 을 USER 로 변경
+
+![](readmeImage/img_36.png)
+
+- 글 등록
+
+![](readmeImage/img_33.png)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
