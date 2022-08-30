@@ -2926,21 +2926,80 @@ spring.security.oauth2.client.provider.naver.user_name_attribute=response
 ![](readmeImage/img_42.png)
 
 
-> 스프링 시큐리티에선 하위 필드를 명시할 수 없다. 최상위 필드들만 user_name 으로 지정 가능ㅎ다. 그러나 네이버의
-> 응답값 최상위 필드는 resultCode, message, response 이기에 스프링 시큐리티에서 인식 가능한 필드는 3개 중에서 골라야 한다.
-> 본문에서 담고 있는 response 를 user_name 으로 지정하고 이후 자바 코드로 response 의 id 를 user_name 으로 지정할 것임
+스프링 시큐리티에선 하위 필드를 명시할 수 없다. 최상위 필드들만 user_name 으로 지정 가능ㅎ다. 그러나 네이버의
+응답값 최상위 필드는 resultCode, message, response 이기에 스프링 시큐리티에서 인식 가능한 필드는 3개 중에서 골라야 한다.
+본문에서 담고 있는 response 를 user_name 으로 지정하고 이후 자바 코드로 response 의 id 를 user_name 으로 지정할 것임
 
 
----
+<br/>
+
+#### 스프링 시큐리티 설정 등록
 
 
+- OAuthAttributes 에 네이버인지 판단하는 코드와 네이버 생성자 추가
 
+```java
+@Builder
+@Getter
+public class OAuthAttributes {
 
+    private Map<String, Object> attributes;
+    private String nameAttributeKey;
+    private String name;
+    private String email;
+    private String picture;
 
+    public static OAuthAttributes of(String registrationId, String userNameAttributeKey, Map<String, Object> attributes) {
+        if("naver".equals(registrationId)) {
+            return ofNaver("id", attributes);
+        }
+        return ofGoogle(userNameAttributeKey, attributes);
+    }
 
+    private static OAuthAttributes ofNaver(String userNameAttributeKey, Map<String, Object> attributes) {
+        Map<String, Object> response = (Map<String, Object>) attributes.get("response");
 
+        return OAuthAttributes.builder()
+                .name((String) response.get("name"))
+                .email((String) response.get("email"))
+                .picture((String) response.get("profile_image"))
+                .attributes(response)
+                .nameAttributeKey(userNameAttributeKey)
+                .build();
+    }
+    
+    // ...
 
+}
+```
 
+<br/>
+
+- index.mustache 에 네이버 로그인 버튼 추가
+
+```html
+	<div class="row">
+		<div class="col-md-6">
+			<a href="/posts/save" role="button" class="btn btn-primary">글 등록</a>
+			{{#userName}}
+				Logged in as: <span id="user">{{userName}}</span>
+				<a href="/logout" class="btn btn-info active" role="button">Logout</a>
+			{{/userName}}
+			{{^userName}}
+				<a href="/oauth2/authorization/google" class="btn btn-success active" role="button">Google Login</a>
+				<a href="/oauth2/authorization/naver" class="btn btn-secondary active" role="button">Naver Login</a>
+			{{/userName}}
+		</div>
+	</div>
+```
+
+| 키워드 | 내용                                                                                                                                                    |
+|:----|:------------------------------------------------------------------------------------------------------------------------------------------------------|
+| /oauth2/authorization/naver | - 네이버 로그인 URL 은 application-oauth.properties 에 등록한 redirect-uri 값에 맞춰 자동으로 등록됨 <br/> - /oauth2/authorization/ 까지는 고정이고 마지막 Path 만 각 소셜 로그인 코드를 사용하면 됨 |
+
+- 결과
+
+![](readmeImage/img_43.png)
 
 
 
@@ -3008,6 +3067,8 @@ spring.security.oauth2.client.provider.naver.user_name_attribute=response
 
 ```html
 ```
+
+
 
 
 |키워드|내용|
