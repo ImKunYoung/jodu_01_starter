@@ -2595,9 +2595,53 @@ public class SessionUser {
 |{{^userName}}| - 머스테리에서 해당 값이 존재하지 않는 경우에 ^ 를 사용함 <br/> - 여기선 userName 이 없다면 로그인 버튼을 노출시키도록 구성함                                                                                   |
 |a href="/oauth2/authorization/google"| - 스프링 시큐리티에서 기본적으로 제공하는 로그인 URL 임 <br/> - 로그아웃 URL 과 마찬가지로 개발자가 별도의 컨트롤러를 생성할 필요가 없다                                                                               |
 
+<br/>
+
+- IndexController (index.mustache 에서 세션 사용을 위한 코드 추가)
+
+```java
+import lombok.RequiredArgsConstructor;
+import org.example.jodu_01_Starter.config.auth.dto.SessionUser;
+import org.example.jodu_01_Starter.service.posts.PostsService;
+import org.example.jodu_01_Starter.web.dto.PostsResponseDto;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+
+import javax.servlet.http.HttpSession;
 
 
+@RequiredArgsConstructor
+@Controller
+public class IndexController {
 
+    private final PostsService postsService;
+    private final HttpSession httpSession;
+
+    @GetMapping("/")
+    public String index(Model model) {
+        model.addAttribute("posts", postsService.findAllDesc());
+        
+        SessionUser user = (SessionUser) httpSession.getAttribute("user");
+
+        if(user !=null) {
+            model.addAttribute("userName", user.getName());
+        }
+
+        return "index";
+    }
+
+    // @GetMapping("/posts/save")
+    // ...
+
+}
+```
+
+|키워드| 내용                                                                                                                                           |
+|:---|:---------------------------------------------------------------------------------------------------------------------------------------------|
+|(SessionUser) httpSession.getAttribute("user")| - 앞서 작성된 CustomOAuth2UserService 에서 로그인 성공 시 세션에 SessionUser 를 저장하도록 구성함 <br/> - 즉, 로그인 성공 시 httpSession.getAttribute("user") 에서 값을 가져올 수 있다 |
+|if(user !=null)| - 세션에 저장된 값이 있을 때만 model 에 userName 으로 등록한다 <br/> - 세션에 저장된 값이 없으면 model 엔 아무런 값이 없는 상태이니 로그인 버튼이 보임                                         |
 
 
 
@@ -2635,6 +2679,8 @@ public class SessionUser {
 ```java
 
 ```
+
+
 
 
 ```javascript
