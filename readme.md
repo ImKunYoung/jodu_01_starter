@@ -2358,6 +2358,220 @@ public interface UserRepository extends JpaRepository<User, Long> {
 
 - OAuth 라이브러리를 이용한 소셜 로그인 설정 코드 저장 (SecurityConfig)
 
+```java
+import lombok.RequiredArgsConstructor;
+import org.example.jodu_01_Starter.domain.user.Role;
+import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
+
+@RequiredArgsConstructor
+@EnableWebSecurity
+public class SecurityConfig extends WebSecurityConfigurerAdapter {
+
+ private final CustomOAuth2UserService customOAuth2UserService;
+
+ @Override
+ protected void configure(HttpSecurity http) throws Exception {
+  http.csrf().disable().headers().frameOptions().disable().and()
+          .authorizeRequests()
+          .antMatchers("/", "/css/**", "/images/**", "/js/**", "/h2-console/**", "/profile").permitAll()
+          .antMatchers("/api/v1/**").hasRole(Role.USER.name())
+          .anyRequest().authenticated()
+          .and().logout().logoutSuccessUrl("/")
+          .and().oauth2Login().userInfoEndpoint().userService(customOAuth2UserService);
+ }
+
+}
+```
+
+| 키워드                                                 | 내용                                                                                                                                                                      |
+|:----------------------------------------------------|:------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| @EnableWebSecurity                                  | - Spring Security 설정들을 활성화시킨다                                                                                                                                           |
+| csrf().disable().headers().frameOptions().disable() | - h2-console 화면을 사용하기 위해 해당 옵션들을 disable 한다                                                                                                                             |
+| authorizeRequests                                   | - URL 별 권한 관리를 설정하는 옵션의 시작접이다 <br/> - authorizeRequests 가 선언되어야만 antMatchers 옵션을 사용할 수 있음                                                                               |
+| antMatchers                                         | - 권한 관리 대상을 지정하는 옵션임 <br/> - URL, HTTP 메소드별로 관리가 가능하다 <br/> - "/" 등 지정된 URL 들은 permitAll() 옵션을 통해 전체 열람 권한을 줌 <br/> - "/api/v1/**" 주소를 가진 API 는 USER 권한을 가진 사람만 가능하도록 함 |
+| anyRequest                                          | - 설정된 값들 이외 나머지 URL 등을 나타냄  <br/> - 여기서는 authenticated() 을 추가하여 나머지 URL 들은 모두 인증된 사용자들에게만 허용하게 함 <br/> - 인증된 사용자 즉, 로그인한 사용자들을 말함                                       |
+| logout().logoutSuccessUrl("/")                      | - 로그아웃 기능에 대한 여러 설정의 진입점이다 <br/> - 로그아웃 성공 시 / 주소로 이동함                                                                                                                  |
+|userInfoEndpoint| - OAuth2 로그인 성공 이후 사용자 정보를 가져올 때의 설정들을 담당                                                                                                                               |
+|userService| - 소셜 로그인 성공 시 후속 조치를 진행할 UserService 인터페이스의 구현체를 등록 <br/> - 리소스 서버 (즉, 소셜 서비스들)에서 사용자 정보를 가져온 상태에서 추가로 진행하고자 하는 기능을 명시할 수 있음                                            |
+
+<br/>
+
+- CustomOAuth2UserService 클래스 생성
+
+구글 로그인 이후 가져온 사용자의 정보 (email, name, picture) 등을 기반으로 가입 및 정보수정, 세션 저장 등의 기능을 지원
+
+
+```java
+import lombok.RequiredArgsConstructor;
+import org.example.jodu_01_Starter.config.auth.dto.OAuthAttributes;
+import org.example.jodu_01_Starter.config.auth.dto.SessionUser;
+import org.example.jodu_01_Starter.domain.user.User;
+import org.example.jodu_01_Starter.domain.user.UserRepository;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.oauth2.client.userinfo.DefaultOAuth2UserService;
+import org.springframework.security.oauth2.client.userinfo.OAuth2UserRequest;
+import org.springframework.security.oauth2.client.userinfo.OAuth2UserService;
+import org.springframework.security.oauth2.core.OAuth2AuthenticationException;
+import org.springframework.security.oauth2.core.user.DefaultOAuth2User;
+import org.springframework.security.oauth2.core.user.OAuth2User;
+import org.springframework.stereotype.Service;
+
+import javax.servlet.http.HttpSession;
+import java.util.Collections;
+
+
+@RequiredArgsConstructor
+@Service
+public class CustomOAuth2UserService implements OAuth2UserService<OAuth2UserRequest, OAuth2User> {
+
+    private final UserRepository userRepository;
+    private final HttpSession httpSession;
+
+    @Override
+    public OAuth2User loadUser(OAuth2UserRequest userRequest) throws OAuth2AuthenticationException {
+
+        OAuth2UserService<OAuth2UserRequest, OAuth2User> delegate = new DefaultOAuth2UserService();
+        OAuth2User oAuth2User = delegate.loadUser(userRequest);
+
+        String registrationId = userRequest.getClientRegistration().getRegistrationId();
+        String userNameAttributeKey = userRequest.getClientRegistration().getProviderDetails().getUserInfoEndpoint().getUserNameAttributeName();
+
+        OAuthAttributes attributes = OAuthAttributes.of(registrationId, userNameAttributeKey, oAuth2User.getAttributes());
+
+        User user = saveOrUpdate(attributes);
+        httpSession.setAttribute("user", new SessionUser(user));
+
+        return new DefaultOAuth2User(
+                Collections.singleton(new SimpleGrantedAuthority(user.getRoleKey())),
+                attributes.getAttributes(),
+                attributes.getNameAttributeKey()
+        );
+
+    }
+
+    private User saveOrUpdate(OAuthAttributes attributes) {
+        User user = userRepository.findByEmail(attributes.getEmail())
+                .map(entity -> entity.update(attributes.getName(), attributes.getPicture()))
+                .orElse(attributes.toEntity());
+
+        return userRepository.save(user);
+    }
+}
+```
+
+| 키워드                  | 내용                                                                                                                                                              |
+|:---------------------|:----------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| registrationId       | - 현재 로그인 진행 중인 서비스를 구분하는 코드 <br/> - 지금은 구글만 사용하는 불필요한 값이지만, 이후 네이버 로그인 연동 시에 네이버 로그인인지, 구글 로그인인지 구분하기 위해 사용함                                                    |
+| userNameAttributeKey | - OAuth2 로그인 진행 시 키가 되는 필드값을 말하며 PK 와 같은 의미임 <br/> - 구글의 경우 기본적으로 코드를 지원하지만, 네이버 카카오 등은 기본 지원하지 않음. (구글의 기본 코드는 "sub") <br/> - 이후 네이버 로그인과 구글 로그인을 동시 지원할 때 사용됨 |
+| OAuthAttributes      | - OAuth2UserService 를 통해 가져온 OAuth2User 의 attribute 를 담을 클래스임 <br/> - 이후 네이버 등 다른 소셜 로그인도 이 클래스를 사용                                                             |
+| SessionUser          | - 세션에 사용자 정보를 저장하기 위한 DTO 클래스임 <br/> - 사용자의 이름이나 프로필 사진이 변경되면 User 엔티티에도 반영되어야 하기에 DTO 하나 만들어줌                                                                  |
+
+
+<br/>
+
+- OAuthAttributes (dto)
+
+```java
+import lombok.Builder;
+import lombok.Getter;
+import org.example.jodu_01_Starter.domain.user.Role;
+import org.example.jodu_01_Starter.domain.user.User;
+
+import java.util.Map;
+
+@Builder
+@Getter
+public class OAuthAttributes {
+
+    private Map<String, Object> attributes;
+    private String nameAttributeKey;
+    private String name;
+    private String email;
+    private String picture;
+
+    public static OAuthAttributes of(String registrationId, String userNameAttributeKey, Map<String, Object> attributes) {
+        return ofGoogle(userNameAttributeKey, attributes);
+    }
+
+    private static OAuthAttributes ofGoogle(String userNameAttributeKey, Map<String, Object> attributes) {
+        return OAuthAttributes.builder()
+                .name((String) attributes.get("name"))
+                .email((String) attributes.get("email"))
+                .picture((String) attributes.get("picture"))
+                .attributes(attributes)
+                .nameAttributeKey(userNameAttributeKey)
+                .build();
+    }
+
+
+    public User toEntity() {
+        return User.builder()
+                .name(name)
+                .email(email)
+                .picture(picture)
+                .role(Role.GUEST)
+                .build();
+    }
+}
+```
+
+| 키워드  | 내용                                                                                                                                                                         |
+|:-----|:---------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| of() | - OAuth2User 에서 반환하는 사용자 정보는 Map 이기 때문에 값 하나하나를 변환해야 함                                                                                                                     |
+|toEntity()| - User 엔티티를 생성함 <br/> - OAuthAttributes 에서 엔티티를 생성하는 시점은 처음 가입할 때임 <br/> - 가입할 때의 기본 권한을 Role.GUEST 를 사용 <br/> - OAuthAttributes 클래스 생성이 끝났으면 같은 패키지에 SessionUser 클래스를 생성함 |
+
+
+<br/>
+
+- SessionUser (dto) 추가
+
+```java
+import lombok.Getter;
+import org.example.jodu_01_Starter.domain.user.User;
+
+@Getter
+public class SessionUser {
+
+    private String name;
+    private String email;
+    private String picture;
+
+    public SessionUser(User user) {
+        this.name = user.getName();
+        this.email = user.getEmail();
+        this.picture = user.getPicture();
+    }
+
+}
+```
+
+> SessionUser 에는 인증된 사용자 정보만 필요하다
+
+
+
+---
+
+<br/>
+
+- 로그인 테스트
+
+```html
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -2390,6 +2604,7 @@ public interface UserRepository extends JpaRepository<User, Long> {
 
 
 ```java
+
 ```
 
 
