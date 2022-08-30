@@ -2558,13 +2558,42 @@ public class SessionUser {
 - 로그인 테스트
 
 ```html
+{{>layout/header}}
+
+<h1>스프링 부트로 시작하는 웹 서비스</h1>
+
+<div class="col-md-12">
+
+	<!--로그인 기능 영역-->
+	<div class="row">
+		<div class="col-md-6">
+			<a href="/posts/save" role="button" class="btn btn-primary">글 등록</a>
+			{{#userName}}
+				Logged in as: <span id="user">{{userName}}</span>
+				<a href="/logout" class="btn btn-info active" role="button">Logout</a>
+			{{/userName}}
+			{{^userName}}
+				<a href="/oauth2/authorization/google" class="btn btn-success active" role="button">Google Login</a>
+				<a href="/oauth2/authorization/naver" class="btn btn-secondary active" role="button">Naver Login</a>
+			{{/userName}}
+		</div>
+	</div>
+
+	<br>
+
+	<!--목록 출력 영역--> 
+    <!--....-->
+</div>
+
+{{>layout/footer}}
 ```
 
-
-
-
-
-
+|키워드| 내용                                                                                                                                                                 |
+|:---|:-------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+|{{#userName}}| - 머스테치는 다른 언어와 같은 if 문을 (if userName !=null) 제공하지 않음 <br/> - true/false 여부만 판단함 <br/> - 따라서 머스테치에서는 항상 최종값을 넘겨준다 <br/> - 여기서도 userName 이 있다면 userName 을 노출시키도록 구성함 |
+|a href="/logout"| - 스프링 시큐리티에서 기본적으로 제공하는 로그아웃 url 이다 <br/> - 개발자가 별도로 저 URL 에 해당하는 컨트롤러를 만들 필요 없다 <br/> - SecurityConfig 클래스에서 URL 을 변경할 순 있지만 기본 URL 을 사용해도 충분함                    |
+|{{^userName}}| - 머스테리에서 해당 값이 존재하지 않는 경우에 ^ 를 사용함 <br/> - 여기선 userName 이 없다면 로그인 버튼을 노출시키도록 구성함                                                                                   |
+|a href="/oauth2/authorization/google"| - 스프링 시큐리티에서 기본적으로 제공하는 로그인 URL 임 <br/> - 로그아웃 URL 과 마찬가지로 개발자가 별도의 컨트롤러를 생성할 필요가 없다                                                                               |
 
 
 
