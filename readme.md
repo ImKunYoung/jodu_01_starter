@@ -2883,6 +2883,102 @@ public class IndexController {
 
 > 물론 현재는 H2 기반으로 스프링이 재실행될 때 H2 도 재시작되기 때문에 이후 AWS 로 배포하게 되면 AWS 의 데이퍼베이스 서비스인 RDS (Relational Database Service) 를 사용하게 됨
 
+---
+
+<br/>
+
+#### 5.6 네이버 로그인
+
+- 네이버 API 등록
+
+https://developers.naver.com/products/login/api/api.md
+
+![](readmeImage/img_39.png)
+
+![](readmeImage/img_40.png)
+
+![](readmeImage/img_41.png)
+
+
+- application-oauth.properties 등록
+
+```
+# registration
+spring.security.oauth2.client.registration.naver.client-id=Qla8COYfh6X8oFyb961D
+spring.security.oauth2.client.registration.naver.client-secret=y15mFFg40L
+spring.security.oauth2.client.registration.naver.authorization_grant_type=authorization_code
+spring.security.oauth2.client.registration.naver.scope=name,email,profile_image
+spring.security.oauth2.client.registration.naver.client-name=Naver
+
+# Provider
+spring.security.oauth2.client.provider.naver.authorization_uri=https://nid.naver.com/oauth2.0/authorize
+spring.security.oauth2.client.provider.naver.token_uri=https://nid.naver.com/oauth2.0/token
+spring.security.oauth2.client.provider.naver.user-info-uri=https://openapi.naver.com/v1/nid/me
+spring.security.oauth2.client.provider.naver.user_name_attribute=response
+```
+
+> 네이버에서는 스프링 시큐리티를 공식 지원하지 않기 때문에 Common-OAuth2Provider 에서 해주던 값들도 전부 수동으로 입력해야 함.
+
+|키워드| 내용                                                                                            |
+|:---|:----------------------------------------------------------------------------------------------|
+|user_name_attribute| - 기준이 되는 user_name 의 이름을 네이버에서는 response 로 해야함 <br/> - 네이버의 회원 조회 시 반환되는 JSON 의 형태가 아래와 같아서.. |
+
+![](readmeImage/img_42.png)
+
+
+> 스프링 시큐리티에선 하위 필드를 명시할 수 없다. 최상위 필드들만 user_name 으로 지정 가능ㅎ다. 그러나 네이버의
+> 응답값 최상위 필드는 resultCode, message, response 이기에 스프링 시큐리티에서 인식 가능한 필드는 3개 중에서 골라야 한다.
+> 본문에서 담고 있는 response 를 user_name 으로 지정하고 이후 자바 코드로 response 의 id 를 user_name 으로 지정할 것임
+
+
+---
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
