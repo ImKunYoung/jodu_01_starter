@@ -3316,6 +3316,321 @@ public class HelloControllerTest {
 
 ---
 
+<br/>
+
+#### 6.2 인스턴스 생성하기
+
+EC2 (Elastic Compute Cloud) 는 AWS 에서 제공하는 성능, 용량 등을 유동적으로 사용할 수 있는 서비이며 보통 "AWS 에서 리눅스 서버 혹은 윈도우 서버를 사용합니다" 라고 하면 EC2 를 말하는 것이다.
+
+> EC2 의 이름은 Elastic Compute Cloud 에서 C 가 2개가 있어 붙여진 이름임. 비슷한 예로 AWS 의 S3 는 Simple Storage Service 를 말함
+
+#### EC2 에는 다음과 같은 제한 사한이 있음
+
+- 사양이 t2.micro 만 가능
+  - vCPU (가상 CPU) 1 Core, 메모리 1GB 사양임
+  - 보통 vCPU 는 물리 CPU 사양의 절반 정도의 성능을 가짐
+- 월 750시간의 제한이 있음. 이를 초과하면 비용 부과
+  - 24시간 * 31일 = 744 시간임
+  - 즉, 1대의 t2.micro 만 사용한다면 24시간 사용 가능
+
+
+<br/>
+
+---
+
+#### 리전 확인
+
+> 리전이란 AWS 의 서비스가 구동될 지역을 이야기하며, AWS 는 도시별로 클라우드 센터를 지어 해당 센터에서 구축된 가상머신들을 사용할 수 있는데 이를 리전이라고 한다.
+
+- 리전 서울로 변경
+
+![](readmeImage/img_51.png)
+
+---
+
+#### 화면 중앙의 검색창에 EC2 검색 후 클릭
+
+![](readmeImage/img_52.png)
+
+- 그러면 EC2 대시보드 짠 하고 나옴
+
+![](readmeImage/img_53.png)
+
+> 인스턴스란 EC2 서비스에 생성된 가상머신을 말한다.
+
+---
+
+#### AMI (Amazon Machine Image) 선택
+
+AMI: EC2 인스턴스를 시작하는 데 필요한 정보를 이미지로 만들어 둔 것
+> 인스턴스라는 가상머신에 운영체제 등을 설치할 수 있게 구워 넣은 이미지임, 예를 들어 아마존 리눅스 1 AMI 를 사용한다면 Amazon Linux 1 OS 가 인스턴스에 설치되어 개발자가 사용할 수 있음을 의미함
+
+![](readmeImage/img_54.png)
+
+![](readmeImage/img_55.png)
+
+![](readmeImage/img_56.png)
+
+
+> ![](readmeImage/img_57.png)
+> 
+> Amazon Linux 1 은 지원이 종료됨
+
+---
+
+#### 인스턴스 유형 선택
+
+- free tier 에서 사용 가능한 t2.micro 선택
+
+![](readmeImage/img_58.png)
+
+t2 는 요금 타입을 뜻하며 micro 는 사양을 뜻한다. t2 외에도 t3 가 있으며 보통 이들을 T 시리즈라고 한다.
+이들은 다른 서비스와 달리 크레딧이란 일종의 CPU 를 사용할 수 있는 포인트 개념이 있으며 인스턴스 크기에 따라 정해진 비율로 CPU 크레딧을
+계속 받게 되며, 사용하지 않을 때는 크레딧을 축적하고, 사용할 때는 이 크레딧을 사용한다. 정해진 사양보다 더 높은 트래픽이 오면 크레딧을 좀 더
+적극적으로 사용하며 트래픽을 처리하지만, 크레딧이 모두 사용되면 EC2 를 사용할 수 없다. 따라서 트래픽이 높은 서비스들은 T 시리즈를 사용하지 않고
+다른 시리즈를 사용하기도 한다.
+
+---
+
+#### 스토리지 구성
+
+서버의 용량은 얼마로 할지 선택, 설정의 기본값은 8GB 이며, 30GB 까지 프리티어로 가능함.
+
+![](readmeImage/img_59.png)
+
+---
+
+#### 보안그룹 설정
+
+보안 그룹은 방화벽을 뜻하며, '서버로 80포트 외에는 허용하지 않는다'는 역할을 하는 방화벽이
+AWS 에서는 보안그룹으로 사용됨
+
+![](readmeImage/img_61.png)
+
+> ssh 설정을 전체 오픈으로 해두면 실수로 pem 키가 노출되는 순간 서버에서 가상화페가 채굴되는 것을 볼 수 있음
+
+- 인스턴스 시작
+
+![](readmeImage/img_60.png)
+
+- 키페어가 없으면 생성
+
+![](readmeImage/img_62.png)
+
+> 인스턴스로 접근하기 위해선 pem 키 (비밀키)가 필요하다. 인스턴스는 지정된 pem 키 (비밀키) 와 매칭되는 공개키를 가지고 있어 해당 pem 키 외에는 접근을 허용하지 않는다.
+> 일종의 마스터키이기 때문에 EC2 서버로 접속할 때 필수 파일이니 잘 관리할 수 있는 디렉토리로 저장해야 한다.
+
+![](readmeImage/img_63.png)
+
+![](readmeImage/img_64.png)
+
+![](readmeImage/img_65.png)
+
+- IP 와 도메인이 활당된 것을 확인할 수 있다
+
+![](readmeImage/img_66.png)
+
+
+---
+
+인스턴스도 결국 하나의 서버이기 때문에 IP 가 존재한다.
+또한 인스턴스 생성 시에 항상 새 IP 를 할당하며, 주의할 점이 인스턴스를 중지하고 다시 시작할 때도 새 IP 가 할당된다.
+따라서 매번 접속해야 하는 IP 가 달라지기 때문에 고정 IP 할당을 해보자
+
+#### EIP 할당
+
+![](readmeImage/img_67.png)
+
+![](readmeImage/img_68.png)
+
+![](readmeImage/img_69.png)
+
+![](readmeImage/img_70.png)
+
+- 방금 생성한 탄력적 IP 를 인스턴스와 연결
+
+![](readmeImage/img_71.png)
+
+![](readmeImage/img_72.png)
+
+![](readmeImage/img_73.png)
+
+![](readmeImage/img_74.png)
+
+> 탄력적 UP 는 생성하고 EC2 서버에 연결하지 않으면 비용이 발생한다. (탄력적 IP 생성하면 EC2에 바로 연결할 것) <br/>
+> 또한 더는 사용할 인스턴스가 없을 때도 탄력적 IP를 삭제하지 않으면 비용 청구된다.
+> 
+
+// TODO - p 23
+
+#### 6.3 EC2 서버에 접속하기
+
+#### 윈도우 환경에서
+
+- 실행 파일 다운로드
+
+``https://www.putty.org/`` 에 접속하여 실행 파일 다운로드
+
+- puttygen.exe 파일 실행
+
+> putty 는 pem 키로 사용이 안 되며 pem 키를 ppk 파일로 변환 해야함.
+> puttygen 은 이 과정을 진행해 주는 클라이언트이다.
+
+- pem을 ppk 파일로 변환
+
+Conversions -> import key -> pem 파일 선택 -> Save private key -> yes -> ppk 파일을 저장할 폴더 선택 후 ok
+
+- putty.exe 실행
+
+![](readmeImage/img_75.png)
+
+> - HostName: username@puvlic_Ip 를 등록한다. 우리가 생성한 Amazon Linux 는 ec2-user 가 username 이라서 ec2-user@탄력적 IP 주소를 등록하면 됨
+> - Port: ssh 접속 포트인 22를 등록한다
+> - Connection type: SSH 를 선택한다
+
+사이드바의 Connection -> SSH -> Auth 를 차례로 클랙한 뒤 ppk browse
+
+![](readmeImage/img_76.png)
+
+다시 Session 탭으로 이동하여 Saved Session 에 현재 설정들을 저장할 이름을 등록하고 save
+
+![](readmeImage/img_77.png)
+
+
+open 을 누른 뒤 ssh 접속 Alert 가 나타나면 accent
+
+![](readmeImage/img_78.png)
+
+SSH 접속 성공!
+
+---
+
+<br/>
+
+#### 6.4 아마존 리눅스 서버 생성 시 곡 해야할 설정들
+
+> - Java 8 설치: 현재 이 프로젝트의 버전은 Java 8 dla
+> - 타임존 변경: 기본 서버의 시간은 미국 시간대임. 한국 시간대가 되어야만 우리가 사용하는 시간이 모두 한국 시간으로 등록되고 사용됨
+> - 호스트네임 변경: 현재 접속한 서버의 별명을 등로함. 실무에서는 한 대의 서버가 아닌 수십 대의 서버가 작동되는 데, IP 만으로 어떤 서버가 어떤 역할을 하는지 알 수 없음. 이를 구분하기 위해 보통 호스트 네임을 필수로 등록함
+
+<br/>
+
+- Java8 설치
+
+앞의 과정과 동일하게 EC2 서버에 접속한 뒤 다음 과정을 진행할 것!
+
+``sudo yum install -y java-1.8.0-openjdk-devel.x86_64``
+
+![](readmeImage/img_79.png)
+
+Java 버전을 8로 변경
+
+``sudo /usr/sbin/alternatives --config java``
+
+![](readmeImage/img_80.png)
+
+이미 설정되어 있네..
+
+Java 버전 확인 
+
+``java -version``
+
+![](readmeImage/img_81.png)
+
+<br/>
+
+- 타임존 변경
+
+EC2 서버의 기본 타임존은 UTC 임. (세계 표준 시간) 즉, 한국의 시간과는 9시간 차이가 발생하며
+서버에서 수행되는 Java 애플리케이션에서 생성되는 시간도 9시간씩 차이가 나기 때문에 KST (한국 시간) 으로 변경한다
+
+<br/>
+
+
+다음을 차례로 임력
+
+
+``sudo rm /etc/localtime``
+
+``sudo ln -s /usr/share/zoneinfo/Asia/Seoul /etc/localtime``
+
+![](readmeImage/img_85.png)
+
+<br/>
+
+- Hostname 변경 
+
+여러 서버를 관리 중일 경우 IP 만으로 어떤 서비스의 서버인지 확인하기 어려움
+
+1. hostnamectl 명령으로 호스트 이름을 설정하여 정규화된 도메인 이름을 반영
+
+``sudo hostnamectl set-hostname freelec-springboot-service``
+
+2. /etc/sysconfig/network 구성 파일을 열고 HOSTNAME 항목을 변경
+
+``sudo vim /etc/sysconfig/network``
+
+![](readmeImage/img_82.png)
+
+I 눌러서 Insert 모드로 전환 뒤, 호스트 네임 입력
+
+![](readmeImage/img_83.png)
+
+
+ESC 버튼,  :x 입력, Enter 버튼
+
+
+3. 인스턴스를 재부팅하여 새 호스트 이름 적용
+
+``sudo reboot``
+
+4. 인스턴스에 로그인하고 호스트 이름이 업데이트 되었는지 확인. hostname 명령어 사용
+
+![](readmeImage/img_86.png)
+
+5. 호스트 주소를 찾을 때 가장 먼저 검색해 보는 /etc/hosts 에 변경된 hostname 을 등록
+
+   - /etc/host 파일 오픈
+``sudo vim /etc/hosts``
+   - HOSTNAME 등록
+``127.0.0.1 freelec-springboot-webservice``
+
+![](readmeImage/img_87.png)
+
+6. 호스트 이름이 정상적으로 등록되었는 지 확인 
+
+``curl 등록한 호스트 이름``
+
+- 등록에 실패한 경우
+
+![](readmeImage/img_88.png)
+
+- 등록에 성공한 경우
+
+![](readmeImage/img_89.png)
+
+> 아직 80 포트로 실행된 서비스가 없기 때문에 해당 에러가 발생함
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
