@@ -3283,6 +3283,38 @@ public class HelloControllerTest {
 
 ---
 
+<br/>
+
+#### 6.4 AWS 회원 가입
+
+
+- AWS 프리티어 계정 생성
+
+``https://aws.amazon.com/ko/`` 로 이동한 뒤 무료 계정 만들기 선택
+
+![](readmeImage/img_46.png)
+
+![](readmeImage/img_45.png)
+
+
+![](readmeImage/img_47.png)
+
+> 구글 검색창에 '영어주소'
+
+![](readmeImage/img_48.png)
+
+> 카드 정보 등록
+
+![](readmeImage/img_49.png)
+
+> 플랜 선택
+
+![](readmeImage/img_50.png)
+
+> 콘솔 로그인 버튼 클릭
+
+
+---
 
 
 
