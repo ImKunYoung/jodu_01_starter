@@ -3611,29 +3611,104 @@ ESC 버튼,  :x 입력, Enter 버튼
 
 > 아직 80 포트로 실행된 서비스가 없기 때문에 해당 에러가 발생함
 
+---
+
+<br/>
+
+### 07 AWS 에 데이터베이스 환경을 만들어보자 - AWS RDS
+
+- RDS (Relational Database Service): AWS 에서 지원하는 클라우드 기반 관계형 데이터베이스로 하드웨어 프로비저닝, 데이터베이스 설정, 패치 및 백업과 같이 잦은 운영 작업을 자동화하여 개발자가 개발에 집중할 수 있게 지원하는 서비스 이다.
+
+--- 
+
+<br/>
+
+#### 7.1 RDS 인스턴스 생성하기
+
+![](readmeImage/img_90.png)
+
+![](readmeImage/img_91.png)
 
 
+> - 특별한 이유가 없다면 MySQL, MariaDB, PostgreSQL 을 사용하는 이유 <br/>
+> 1. 상용 데이터베이스인 오라클, MSSQL 이 오픈소스인 MySQL, MariaDB, PostgreSQL 보다 동일한 사양 대비 가격이 더 높다.
+> 2. Amazon Aurora 교체 용이성. Amazon Aurora 는 AWS 에서 MySQL 과 PostgreSQL 을 클라우드 기반에 맞게 재구성한 데이터베이스로 공식 자료에 의하면 RDS MySQL 대비 5배, RDS PostgreSQL 보다 3배의 성능을 제공함. 또한 AWS 에서 직접 엔지니어링하고 있기 때문에 계혹해서 발전하고 있다.
+> 3. 그러나 Amazon Aurora 는 프리티어 대상이 아니며, 최저 비용이 월 10만원 이상임
+
+- MariaDB의 특징
+> 오픈소스로 발전하던 MySQL이 2010년에 썬마이크로시스템즈와 오라클이 합병되면서 많은 MySQL 개발자들이 썬마이크로시스템즈를
+> 떠나며 본인만의 프로젝트를 진행하게 됨. 이 중 MySQL 의 창시자인 몬티 와이드니어가 만든 프로젝트가 MariaDB 임
+> MySQL을 기반으로 만들어졌기 때문에 쿼리를 비롯한 전반적인 방법은 MySQL 과 유사함 
+
+- MySQL 대비 MariaDB의 장점
+> - 동일 하드웨어 사양으로 MySQL 보다 향상된 성능
+> - 좀 더 활성화된 커뮤니티
+> - 다양한 긴으
+> - 다양한 스토리지 엔진
+
+![](readmeImage/img_92.png)
+
+![](readmeImage/img_93.png)
+
+![](readmeImage/img_94.png)
+
+![](readmeImage/img_95.png)
+
+![](readmeImage/img_96.png)
+
+---
+
+<br/>
+
+#### RDS 운영환경에 맞는 파라미터 설정하기
+
+- RDS 설정하기
+  - 타임존
+  - Character Set
+  - Max Connection
+
+<br/>
+
+- 타임존
+
+![](readmeImage/img_97.png)
+
+![](readmeImage/img_98.png)
+
+![](readmeImage/img_99.png)
+
+![](readmeImage/img_100.png)
+
+![](readmeImage/img_101.png)
+
+- Character Set
+
+char 검색해서 나오는 거 전부 utf8mb4 로 변경 (이모지 저장 가능), Collation 항목은 전부 utf8mb4_general_ci 로 변경
 
 
+- Max Connection
+
+RDS의 Max Connection 은 인스턴스 사양에 따라 자동으로 정해짐.
+프리티어 사양으로는 약 60개의 커넥션만 가능해서 좀 더 넉넉한 값으로 지정
+
+![](readmeImage/img_102.png)
 
 
+#### 생성된 파라미터 그룹을 데이터베이스에 연결
 
+![](readmeImage/img_103.png)
 
+![](readmeImage/img_104.png)
 
+![](readmeImage/img_105.png)
 
+> 수정사항이 반영되는 동안 DB가 작동하지 않을 수 있으므로 예약 시간을 적용하면 주로 새벽시간대에 반영이 됨
 
+---
 
+#### 7.3 내 PC 에서 RDS 에 접속하기
 
-
-
-
-
-
-
-
-
-
-
+- RDS 의 보안 그룹에 본인 PC의 IP 추가
 
 
 
