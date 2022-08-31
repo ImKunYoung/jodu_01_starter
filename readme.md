@@ -3001,39 +3001,248 @@ public class OAuthAttributes {
 
 ![](readmeImage/img_43.png)
 
+---
+
+<br/>
+
+#### 5.7 기존 테스트에 시큐리티 적용으로 문제가 되는 부분 해결
+
+![](readmeImage/img_44.png)
+
+<br/>
+
+- 문제 1
+
+``Caused by: org.springframework.beans.factory.NoSuchBeanDefinitionException: No qualifying bean of type 'org.example.jodu_01_Starter.config.auth.CustomOAuth2UserService' available: ``
+
+> 소셜 로그인 관련 설정값들일 없기 때문에 발생하는 문제임. src/main 환경과 src/test 환경은 차이가 있으며 둘은 본인만의 환경 구성을 가짐
+> <br/> 다만 src/main/resources/application.properties 가 테스트 코드를 수행할 때도 적용되는 이유는 test 에 application.properties 가 없으면 main 의 설정을 그대로 가져오기 때문이다.
+> <br/> 반면, application-oauth.properties 의 경우는 안 가져옴
+
+<br/>
+
+- 테스트용 application.properties 추가
+
+```
+spring.jpa.show-sql=true
+spring.jpa.properties.hibernate.dialect=org.hibernate.dialect.MySQL5InnoDBDialect
+spring.h2.console.enabled=true
+spring.profiles.include=oauth
+spring.session.store-type=jdbc
+
+# Test OAuth
+spring.security.oauth2.client.registration.google.client-id=test
+spring.security.oauth2.client.registration.google.client-secret=test
+spring.security.oauth2.client.registration.google.scope=profile,email
+```
+
+<br/>
+
+- 문제 2
+
+```
+Expected :200 OK
+Actual   :302 FOUND
+```
+
+스프링 시큐리티로 인해 인증되지 않은 사용자의 요청을 이동시킴. 따라서 임의로 인증된 사용자를 추가하여 API 만 테스트
+
+- 스프링 시큐리티 테스트를 위한 여러 도구를 지원하는 spring-security-test 를 build.gradle 에 추가
+
+``implementation 'org.springframework.security:spring-security-test'``
+
+- 임의의 사용자 인증 추가
+
+```java
+@RunWith(SpringRunner.class)
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+public class PostsApiControllerTest {
+        //...
+    @Test
+    @WithMockUser(roles = "USER")
+    public void Posts_등록된다() throws Exception {
+        //...
+    }
+
+    @Test
+    @WithMockUser(roles = "USER")
+    public void Posts_수정된다() throws Exception {
+        //...
+    }
+}
+```
+
+|키워드| 내용                                                                                                                                |
+|:---|:----------------------------------------------------------------------------------------------------------------------------------|
+|@WithMockUser(roles = "USER")| - 인증된 모의 (가짜) 사용자를 만들어서 사용 <br/> - roles 에 권한 추가할 수 있음. <br/> - 즉, 이 어노테이션으로 인해 ROLE_USER 권한을 가진 사용자가 API 를 요청하는 것과 동일한 효과를 가지게 됨 |
 
 
+- PostsApiControllerTest 에 MockMvc 추가
 
+```java
+@RunWith(SpringRunner.class)
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+public class PostsApiControllerTest {
 
+    @LocalServerPort
+    private int port;
 
+    @Autowired
+    private PostsRepository postsRepository;
 
+    @Autowired
+    private WebApplicationContext context;
 
+    private MockMvc mvc;
 
+    @Before
+    public void setup() {
+        mvc = MockMvcBuilders
+                .webAppContextSetup(context)
+                .apply(springSecurity())
+                .build();
+    }
 
+    @After
+    public void tearDown() throws Exception {
+        postsRepository.deleteAll();
+    }
 
+    @Test
+    @WithMockUser(roles = "USER")
+    public void Posts_등록된다() throws Exception {
 
+        // given
+        String title = "title";
+        String content = "content";
 
+        PostsSaveRequestDto requestDto = PostsSaveRequestDto.builder()
+                .title(title)
+                .content(content)
+                .author("author")
+                .build();
 
+        String url = "http://localhost:" + port + "/api/v1/posts";
 
+        // when
+        mvc.perform(post(url)
+                .contentType(MediaType.APPLICATION_JSON_UTF8)
+                .content(new ObjectMapper().writeValueAsString(requestDto)))
+                .andExpect(status().isOk());
 
+        // then
+        List<Posts> all = postsRepository.findAll();
+        assertThat(all.get(0).getTitle()).isEqualTo(title);
+        assertThat(all.get(0).getContent()).isEqualTo(content);
 
+    }
 
+    @Test
+    @WithMockUser(roles = "USER")
+    public void Posts_수정된다() throws Exception {
+        //given
+        Posts savedPosts = postsRepository.save(Posts.builder()
+                .title("title")
+                .content("content")
+                .author("author")
+                .build());
 
+        Long updateId = savedPosts.getId();
+        String expectedTitle = "title2";
+        String expectedContent = "content2";
 
+        PostsUpdateRequestDto requestDto = PostsUpdateRequestDto.builder()
+                .title(expectedTitle)
+                .content(expectedContent)
+                .build();
 
+        String url = "http://localhost:" + port + "/api/v1/posts/"+ updateId;
 
+        // when
+        mvc.perform(put(url)
+                .contentType(MediaType.APPLICATION_JSON_UTF8)
+                .content(new ObjectMapper().writeValueAsString(requestDto)))
+                .andExpect(status().isOk());
 
+        // then
+        List<Posts> all = postsRepository.findAll();
+        assertThat(all.get(0).getTitle()).isEqualTo(expectedTitle);
+        assertThat(all.get(0).getContent()).isEqualTo(expectedContent);
 
+    }
+}
+```
 
+| 키워드         | 내용                                                                                                 |
+|:------------|:---------------------------------------------------------------------------------------------------|
+| @Before     | - 매번 테스트가 시작되기 전에 MockMvc 인스턴스를 생성함                                                                |
+| mvc.perform | - 생성된 MockMvc 를 통해 API 를 테스트함. <br/> - 본문 (Body) 영역은 문자열로 표현하기 위해 ObjectMapper 를 통해 문자열 JSON 으로 반환 |
 
+<br/>
 
+- 문제3 <br/>
+@WebMvcTest 에서 CustomOAuth2UserService 를 찾을 수 없음
 
+``No qualifying bean of type 'org.example.jodu_01_Starter.config.auth.CustomOAuth2UserService' available: expected at least 1 bean which qualifies as autowire candidate. Dependency annotations: {}``
 
+> @WebMvcTest 는 WebSecurityConfigurerAdapter, WebMvcConfigurer, @ControllerAdvice, @Controller 를 읽음
+> @Repository, @Service, @Component 는 스캔 대상이 아님
 
+```java
+import org.example.jodu_01_Starter.config.auth.SecurityConfig;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.context.annotation.ComponentScan;
+import org.springframework.context.annotation.FilterType;
+import org.springframework.security.test.context.support.WithMockUser;
+import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.test.web.servlet.MockMvc;
 
+import static org.hamcrest.Matchers.is;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+@RunWith(SpringRunner.class)
+@WebMvcTest(controllers = HelloController.class,
+        excludeFilters = {
+                @ComponentScan.Filter(type = FilterType.ASSIGNABLE_TYPE, classes = SecurityConfig.class)
+        }
+)
+public class HelloControllerTest {
 
+    @Autowired
+    private MockMvc mvc;
 
+    @WithMockUser(roles="USER")
+    @Test
+    public void hello가_리턴된다() throws Exception {
+        String hello = "hello";
+
+        mvc.perform(get("/hello"))
+                .andExpect(status().isOk())
+                .andExpect(content().string(hello));
+    }
+
+    @WithMockUser(roles="USER")
+    @Test
+    public void helloDto가_리턴된다() throws Exception {
+        String name = "hello";
+        int amount = 1000;
+
+        mvc.perform(
+                        get("/hello/dto")
+                                .param("name", name)
+                                .param("amount", String.valueOf(amount)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.name", is(name)))
+                .andExpect(jsonPath("$.amount", is(amount)));
+    }
+}
+```
 
 
 
