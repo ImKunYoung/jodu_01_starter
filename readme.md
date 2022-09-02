@@ -3677,6 +3677,8 @@ ESC 버튼,  :x 입력, Enter 버튼
 
 ![](readmeImage/img_99.png)
 
+![](readmeImage/img_115.png)
+
 ![](readmeImage/img_100.png)
 
 ![](readmeImage/img_101.png)
@@ -3710,17 +3712,69 @@ RDS의 Max Connection 은 인스턴스 사양에 따라 자동으로 정해짐.
 
 - RDS 의 보안 그룹에 본인 PC의 IP 추가
 
+![](readmeImage/img_106.png)
+
+![](readmeImage/img_107.png)
+
+![](readmeImage/img_109.png)
+
+> - 보안 그룹 첫 번째 줄: 현재 내 PC의 IP를 등록한다
+> - 보안 그룹 두 번째 줄: EC2의 보안 그룹을 추가한다
+>   - 이렇게 하면 EC2와 RDS 간에 접근이 가능하다
+>   - EC2의 경우 이후에 2대 3대가 될 수도 있는데, 매번 IP를 등록할 수는 없으니 보편적으로 이렇게 보안 그룹 간에 연동을 진행함
+
+- Database 플러그인 설치 (로컬에서 테스트)
+
+![](readmeImage/img_110.png)
+
+![](readmeImage/img_111.png)
+
+![](readmeImage/img_112.png)
+
+![](readmeImage/img_113.png)
+
+![](readmeImage/img_114.png)
+
+![](readmeImage/img_116.png)
+
+![](readmeImage/img_117.png)
+
+> 데이터베이스를 선택한다
+
+![](readmeImage/img_118.png)
+
+> 현재의 character_set, collation 설정을 확인한다.
+
+![](readmeImage/img_120.png)
+
+---
+
+- 타임존 확인
+
+```sql
+select @@time_zone, now();
+```
+
+![](readmeImage/img_119.png)
+
+- 한글명이 잘 들어가는지 간단한 테이블 생성과 insert 쿼리 실행
+
+```sql
+CREATE TABLE test (
+    id bigint(20) NOT NULL AUTO_INCREMENT,
+    content varchar(255) DEFAULT NULL,
+    PRIMARY KEY (id)
+) ENGINE=InnoDB;
+
+insert into test(content) values ('테스트');
+
+select * from test;
+```
+
+![](readmeImage/img_121.png)
 
 
-
-
-
-
-
-
-
-
-
+---
 
 
 
