@@ -3776,6 +3776,65 @@ select * from test;
 
 ---
 
+<br/>
+
+#### 7.4 EC2 에서 RDS 접근 확인
+
+- EC2에 SSH 접속 진행
+- 접속 후 MySQL 접근 테스트를 위한 MySQL 설치 ``sudo yum install mysql``
+- RDS 접속 ``mysql -u 계정 -p 비밀번호 -h HOST 주소``
+- 비밀번호 입력하고 Enter
+  - 접속이 성공했거나, 실패 시 실패메시지가 바로 나온다면 RDS 보안그룹이 성공적으로 변경된 것
+  - 실패 메세지가 바로 안 나오고 time out 될 때까지 대기한다면 보안그룹 변경이 실패한 것
+
+![](readmeImage/img_122.png)
+
+![](readmeImage/img_123.png)
+
+![](readmeImage/img_124.png)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
