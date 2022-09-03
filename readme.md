@@ -3794,6 +3794,111 @@ select * from test;
 ![](readmeImage/img_124.png)
 
 
+---
+
+<br/>
+
+### 08 EC2 서버에 프로젝트를 배포해보자
+
+---
+
+#### 8.1 EC2에 프로젝트 Clone 받기
+
+- 깃허브에서 코드를 받아올 수 있게 EC2에 깃 설치
+
+``sudo yum install git``
+
+- 설치가 완료되면 설치 상태 확인
+
+``git --version``
+
+- git clone 으로 프로젝트를 저장할 디렉토리 생성
+
+``mkdir ~/app && mkdir ~/app/step1``
+
+- 생성된 디렉토리로 이동
+
+``cd ~/app/step1``
+
+- 코드가 저장된 깃허브 리포지터리에서 https 주소 복사
+
+![](readmeImage/img_125.png)
+
+- 복사한 https 주소를 통해 git clone 진행
+
+``git clone https://github.com/ImKunYoung/jodu_01_starter.git``
+
+![](readmeImage/img_126.png)
+
+- git clone 이 끝나면 클론된 프로젝트로 이동해서 파일들이 잘 복사되었는지 확인
+
+``cd 프로젝트명``
+``ll``
+
+![](readmeImage/img_127.png)
+
+- 코드들이 잘 수행되는지 테스트
+
+``./gradlew test``
+
+- 만일 권한 없다고 나오면
+
+``chmod +x gradlew``
+
+- 테스트가 실패해서 수정하고 깃허브에 푸시를 했다면
+
+``git pull``
+
+![](readmeImage/img_129.png)
+
+> 현재 EC2엔 그레이들을 설치하지 않았으나 Gradle Task (ex: test) 를 수행할 수 있다. 이는 프로젝트 내부에 포함된 gradlew 파일 때문이고,
+> 그레이들이 설치되지 않은 환경 혹은 버전이 다른 상황에서도 해당 프로젝트에 한해서 그레이들을 쓸 수 있도록 지원하는 Wrapper 파일 때문임. 해당 파일을
+> 직접 이용하기 때문에 별도로 설치할 필요가 없다.
+
+---
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
