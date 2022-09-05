@@ -3977,18 +3977,40 @@ vim nohup.out
 Method springSecurityFilterChain in org.springframework.security.config.annotation.web.configuration.WebSecurityConfiguration required a bean of type 'org.springframework.security.oauth2.client.registration.ClientRegistrationRepository' that could not be found.
 ```
 
+---
+
+<br/>
+
+### 8.3 외부 Security 파일 등록하기
+
+* ERROR
+
+```
+Method springSecurityFilterChain in org.springframework.security.config.annotation.web.configuration.WebSecurityConfiguration required a bean of type 'org.springframework.security.oauth2.client.registration.ClientRegistrationRepository' that could not be found.
+```
+
+> ClientRegistrationRepository 를 생성하려면 clientId 와 clientSecret 이 필수임. 로컬 PC 에서 실행할 때는 application-oauth.properties 가 
+> 있어 문제가 없었으나 이 파일은 .gitignore 로 git 에서 제외 대상이라 깃허브에 올라가 있지 않음.
+> 따라서, 애플리케이션을 실행하기 위해 공개된 저장소에 ClientId 와 ClientSecret 을 올릴 수는 없으니 서버에서 직접 이 설정을 가지고 있게 할 것임.
 
 
+* step1 이 아닌 app 디렉토리에 properties 파일을 생성.
 
+```
+vim /home/ec2-user/app/application-oauth.properties
+```
 
+* 생성된 application-oauth.properties 에 로컬 환경에 있는 application-oauth.properties 파일의 내용을 복사 붙여넣기
 
+* 방금 생성한 application-oauth.properties 를 쓰도록 deploy.sh 파일을 수정
 
+```
+nohup java -jar \ -Dspring.config.location=classpath:/application.properties,/home/ec2-user/app/application-oauth.properties \ $REPOSITORY/$JAR_NAME 2>&1 &
+```
 
-
-
-
-
-
+| 키워드                      | 내용                                                                                                                                                                                                                                                          |
+|:-------------------------|:------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| -Dspring.config.location | - 스프링 설정 파일 위치를 지정한다 <br/> - 기본 옵션들을 담고 있는 application.properties 과 OAuth 설정들을 담고 있는 application-oauth.properties의 위치를 지정한다 <br/> - classpath 가 붙으면 jar 안에 있는 resouces 디렉토리를 기준으로 경로가 생성된다 <br/> - application-oauth.properties 는 외부에 파일이 있기 때문에 절대경로를 사용한다 |
 
 
 
