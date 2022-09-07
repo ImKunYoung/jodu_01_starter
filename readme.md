@@ -3880,7 +3880,7 @@ select * from test;
 ```
 #!/bin/bash
 
-REPOSITORY=/home/ec2-user/app/step2
+REPOSITORY=/home/ec2-user/app/step1
 PROJECT_NAME=jodu_01_starter
 
 echo "> Build 파일 복사"
@@ -3889,7 +3889,7 @@ cp $REPOSITORY/zip/*.jar $REPOSITORY/
 
 echo "> 현재 구동중인 애플리케이션 pid 확인"
 
-CURRENT_PID=$(pgrep -fl freelec-springboot2-webservice | grep jar | awk '{print $1}')
+CURRENT_PID=$(pgrep -fl jodu_01_starter | grep jar | awk '{print $1}')
 
 echo "현재 구동중인 어플리케이션 pid: $CURRENT_PID"
 
@@ -4127,7 +4127,10 @@ spring.datasource.driver-class-name=org.mariadb.jdbc.Driver
 - deploy.sh 가 real profile 을 사용하도록 설정
 
 ```
-nohup java - jar \-Dspring.config.location=classpath:/application.properties,/home/ec2-user/app/application-oauth.properties,/home/ec2-user/app/application-real-db.properties,classpath:/application-real.properties \ -Dspring.profiles.active=real \$REPOSITORY/$JAR_NAME 2>&1 &
+nohup java - jar \
+-Dspring.config.location=classpath:/application.properties,/home/ec2-user/app/application-oauth.properties,/home/ec2-user/app/application-real-db.properties,classpath:/application-real.properties \ 
+-Dspring.profiles.active=real \$REPOSITORY/
+$JAR_NAME 2>&1 &
 ```
 
 |키워드| 내용                                                                                                                                                 |
@@ -4135,13 +4138,19 @@ nohup java - jar \-Dspring.config.location=classpath:/application.properties,/ho
 |-Dspring.profiles.active=real| - application-real.properties 를 활성화 시킴 <br/> - application-real.properties 의 spring.profiles.include=oauth,real-db 옵션 때문에 real-db 역시 또한 활성화 대상에 포함 |
 
 
+### 8.5 EC2에서 소셜 로그인하기
 
+- AWS 보안 그룹 변경
 
+EC2에 스프링 부트 프로젝트가 8080 포토로 배포되었으니, 8080 포트가 보안 그룹에 열려 있는지 확인
 
+![](readmeImage/img_134.png)
 
+- AWS EC2 도메인으로 접속
 
+![](readmeImage/img_136.png)
 
-
+![](readmeImage/img_135.png)
 
 
 
