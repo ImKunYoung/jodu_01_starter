@@ -4153,15 +4153,17 @@ EC2에 스프링 부트 프로젝트가 8080 포토로 배포되었으니, 8080 
 ![](readmeImage/img_135.png)
 
 
+- 구글에 EC2 주소 등록
 
+![](readmeImage/img_137.png)
 
+![](readmeImage/img_138.png)
 
+![](readmeImage/img_139.png)
 
+> 퍼블릭 DNS 주소:8080/login/oauth2/code/google
 
-
-
-
-
+![](readmeImage/img_140.png)
 
 
 
