@@ -3880,48 +3880,43 @@ select * from test;
 ```
 #!/bin/bash
 
-REPOSITORY=/home/ec2-user/app/step1
+REPOSITORY=/home/ec2-user/app/step2
 PROJECT_NAME=jodu_01_starter
-
-cd $REPOSITORY/$PROJECT_NAME/
-
-echo "> Git Pull"
-
-git pull
-
-echo "> 프로젝트 Build 시작"
-
-./gradlew build
-
-echo "> step1 디렉토리로 이동"
-
-cd $REPOSITORY
 
 echo "> Build 파일 복사"
 
-cp $REPOSITORY/$PROJECT_NAME/build/libs/*.jar $REPOSITORY/
+cp $REPOSITORY/zip/*.jar $REPOSITORY/
 
 echo "> 현재 구동중인 애플리케이션 pid 확인"
 
-CURRENT_PID=$(pgrep -f ${PROJECT_NAME}.*.jar)
+CURRENT_PID=$(pgrep -fl freelec-springboot2-webservice | grep jar | awk '{print $1}')
 
-echo "> 현재 구동중인 애플리케이션 pid: $CURRENT_PID"
+echo "현재 구동중인 어플리케이션 pid: $CURRENT_PID"
 
 if [ -z "$CURRENT_PID" ]; then
- echo "> 현재 구동 중인 애플리케이션이 없으므로 종료하지 않습니다."
+    echo "> 현재 구동중인 애플리케이션이 없으므로 종료하지 않습니다."
 else
- echo "> kill -15 $CURRENT_PID"
- kill -15 $CURRENT_PID
- sleep 5
+    echo "> kill -15 $CURRENT_PID"
+    kill -15 $CURRENT_PID
+    sleep 5
 fi
 
-echo "> 새 애플리케이션 배포"
+echo "> 새 어플리케이션 배포"
 
-JAR_NAME=$(ls -tr $REPOSITORY/ | grep jar | tail -n 1)
+JAR_NAME=$(ls -tr $REPOSITORY/*.jar | tail -n 1)
 
 echo "> JAR Name: $JAR_NAME"
 
-nohup java -jar $REPOSITORY/$JAR_NAME 2>&1 &
+echo "> $JAR_NAME 에 실행권한 추가"
+
+chmod +x $JAR_NAME
+
+echo "> $JAR_NAME 실행"
+
+nohup java -jar \
+    -Dspring.config.location=classpath:/application.properties,classpath:/application-real.properties,/home/ec2-user/app/application-oauth.properties,/home/ec2-user/app/application-real-db.properties \
+    -Dspring.profiles.active=real \
+    $JAR_NAME > $REPOSITORY/nohup.out 2>&1 &
 ```
 
 | 키워드                                                        | 내용                                                                                                                                                                                                                                                                                                  |
@@ -4095,6 +4090,72 @@ spring.session.store-type=jdbc
 ```
 
 > profile=real 인 환경이 구성됨. 실제 운영될 환경이기 때문에 보안/로그상 이슈가 될 만한 설정들을 모두 제거하며 RDS 환경 profile 설정이 추가된다.
+
+---
+
+<br/>
+
+### EC2 설정
+
+> OAuth와 마찬가지로 RDS 접속 정보도 보호해야 할 정보이니 EC2 서버에 직접 설정 파일을 둔다
+
+- app 디렉토리에 application-real-db.properties 파일 생성
+
+``
+vim ~/app/application-real-db.properties
+``
+
+
+- 생성된 application-real-db.properties 에 아래 내용 추가
+
+```properties
+spring.jpa.hibernate.ddl-auto=none
+spring.datasource.url=jdbc:mariadb://rds주소:포트명(기본은 3306)/database이름
+spring.datasource.username=admin
+spring.datasource.password=db계정 비밀번호
+spring.datasource.driver-class-name=org.mariadb.jdbc.Driver
+```
+
+|키워드| 내용                                                                                                                                                               |
+|:---|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------|
+|spring.jpa.hibernate.ddl-auto=none| - JPA로 테이블이 자동 생성되는 옵션을 None (생성하지 않음) 으로 지정한다 <br/> - RDS 에는 실제 운영으로 사용될 테이블이니 절대 스프링 부트에서 새로 만들지 않도록 한다 <br/> - 이 옵션을 하지 않으면 테이블이 모두 새로 생성될 수 있다 <br/> - 주의할 것 |
+
+
+<br/>
+
+
+- deploy.sh 가 real profile 을 사용하도록 설정
+
+```
+nohup java - jar \-Dspring.config.location=classpath:/application.properties,/home/ec2-user/app/application-oauth.properties,/home/ec2-user/app/application-real-db.properties,classpath:/application-real.properties \ -Dspring.profiles.active=real \$REPOSITORY/$JAR_NAME 2>&1 &
+```
+
+|키워드| 내용                                                                                                                                                 |
+|:---|:---------------------------------------------------------------------------------------------------------------------------------------------------|
+|-Dspring.profiles.active=real| - application-real.properties 를 활성화 시킴 <br/> - application-real.properties 의 spring.profiles.include=oauth,real-db 옵션 때문에 real-db 역시 또한 활성화 대상에 포함 |
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
